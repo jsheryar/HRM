@@ -68,7 +68,7 @@ export function EmployeeTable({ employees }: EmployeeTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={5} className="h-24 text-center">
-                No employees found for this location.
+                No employees found.
               </TableCell>
             </TableRow>
           )}
