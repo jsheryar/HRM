@@ -10,13 +10,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Employee } from "@/lib/data";
 
 interface EmployeeTableProps {
   employees: Employee[];
+  onEdit: (employee: Employee) => void;
+  onDelete: (employeeId: string) => void;
 }
 
-export function EmployeeTable({ employees }: EmployeeTableProps) {
+export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -27,6 +31,7 @@ export function EmployeeTable({ employees }: EmployeeTableProps) {
             <TableHead>Department</TableHead>
             <TableHead>Location</TableHead>
             <TableHead>Contact</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,11 +68,21 @@ export function EmployeeTable({ employees }: EmployeeTableProps) {
                   <div className="text-sm text-muted-foreground">{employee.zone}</div>
                 </TableCell>
                 <TableCell>{employee.email}</TableCell>
+                <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(employee)}>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)}>
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                    </Button>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={6} className="h-24 text-center">
                 No employees found.
               </TableCell>
             </TableRow>
