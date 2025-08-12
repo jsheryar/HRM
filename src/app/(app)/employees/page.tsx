@@ -80,7 +80,7 @@ export default function EmployeesPage() {
       photo: selectedEmployee?.photo || 'https://placehold.co/100x100.png',
       department: formData.get("department") as string,
       designation: formData.get("designation") as string,
-      location: formData.get("location") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
+      station: formData.get("station") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
       zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
@@ -89,7 +89,7 @@ export default function EmployeesPage() {
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.location || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth) {
         toast({
             title: "Error",
             description: "Please fill out all fields.",
@@ -143,12 +143,12 @@ export default function EmployeesPage() {
     setFilteredEmployees(employeeList);
   }, [employeeList]);
 
-  const filterByLocation = (location: string) => {
-    if (location === "All") {
+  const filterByStation = (station: string) => {
+    if (station === "All") {
       setFilteredEmployees(employeeList);
     } else {
       setFilteredEmployees(
-        employeeList.filter((e) => e.location === location)
+        employeeList.filter((e) => e.station === station)
       );
     }
   };
@@ -212,10 +212,10 @@ export default function EmployeesPage() {
                     </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Select name="location" defaultValue={selectedEmployee?.location} required>
+                    <Label htmlFor="station">Station</Label>
+                    <Select name="station" defaultValue={selectedEmployee?.station} required>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a location" />
+                            <SelectValue placeholder="Select a station" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Head Office">Head Office</SelectItem>
@@ -262,7 +262,7 @@ export default function EmployeesPage() {
         </Dialog>
       </div>
       
-      <Tabs defaultValue="All" onValueChange={filterByLocation} className="w-full">
+      <Tabs defaultValue="All" onValueChange={filterByStation} className="w-full">
         <TabsList className="grid w-full grid-cols-4 md:w-fit">
           <TabsTrigger value="All">All</TabsTrigger>
           <TabsTrigger value="Head Office">Head Office</TabsTrigger>
@@ -273,13 +273,13 @@ export default function EmployeesPage() {
             <EmployeeTable employees={filteredEmployees} onEdit={openDialog} onDelete={handleDeleteClick}/>
         </TabsContent>
         <TabsContent value="Head Office">
-          <EmployeeTable employees={filteredEmployees.filter(e => e.location === 'Head Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
+          <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Head Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
         </TabsContent>
         <TabsContent value="Zonal Office">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.location === 'Zonal Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
+            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Zonal Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
         </TabsContent>
         <TabsContent value="Labour Colony">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.location === 'Labour Colony')} onEdit={openDialog} onDelete={handleDeleteClick} />
+            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Labour Colony')} onEdit={openDialog} onDelete={handleDeleteClick} />
         </TabsContent>
       </Tabs>
 

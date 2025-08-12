@@ -6,7 +6,7 @@ export function DashboardCards() {
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter((e) => e.status === 'Active').length;
   const inactiveEmployees = totalEmployees - activeEmployees;
-  const locations = new Set(employees.map(e => e.location));
+  const stations = new Set(employees.map(e => e.station));
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -17,7 +17,7 @@ export function DashboardCards() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalEmployees}</div>
-          <p className="text-xs text-muted-foreground">Across all locations</p>
+          <p className="text-xs text-muted-foreground">Across all stations</p>
         </CardContent>
       </Card>
       <Card>
@@ -42,11 +42,11 @@ export function DashboardCards() {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Locations</CardTitle>
+          <CardTitle className="text-sm font-medium">Stations</CardTitle>
           <MapPin className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{locations.size}</div>
+          <div className="text-2xl font-bold">{stations.size}</div>
           <p className="text-xs text-muted-foreground">Zonal Offices & Colonies</p>
         </CardContent>
       </Card>
