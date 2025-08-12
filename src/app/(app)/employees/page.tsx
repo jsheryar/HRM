@@ -276,7 +276,7 @@ export default function EmployeesPage() {
                 </div>
                  <div className="space-y-2 sm:col-span-3">
                   <Label htmlFor="education">Education Record</Label>
-                  <Textarea id="education" name="education" defaultValue={selectedEmployee?.education} placeholder="Enter educational qualifications..."/>
+                  <Textarea id="education" name="education" defaultValue={selectedEmployee?.education} placeholder="e.g. University of Example, MSc Computer Science, 2022, 850/1000 (85%)"/>
                 </div>
               </div>
               <DialogFooter>
