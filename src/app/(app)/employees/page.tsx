@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { employees, Employee } from "@/lib/data";
+import { employees, Employee, Transfer } from "@/lib/data";
 import { EmployeeTable } from "@/components/app/employee-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
@@ -67,10 +67,12 @@ export default function EmployeesPage() {
   const [obtainedMarks, setObtainedMarks] = React.useState<number | string>("");
   const [totalMarks, setTotalMarks] = React.useState<number | string>("");
   const [percentage, setPercentage] = React.useState<string>("");
+  const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
   const { toast } = useToast();
   
   const openDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
+    setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     if(employee && employee.education) {
         // This is a simplified parsing. A more robust solution would be better.
         const eduParts = employee.education.split(',');
@@ -117,7 +119,7 @@ export default function EmployeesPage() {
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
-      transferHistory: selectedEmployee?.transferHistory || [],
+      transferHistory: transferHistory,
       status: selectedEmployee?.status || 'Active',
     };
     
@@ -179,6 +181,22 @@ export default function EmployeesPage() {
       }
   }
 
+  const handleTransferChange = (index: number, field: keyof Transfer, value: string) => {
+    const updatedHistory = [...transferHistory];
+    updatedHistory[index] = { ...updatedHistory[index], [field]: value };
+    setTransferHistory(updatedHistory);
+  };
+
+  const addTransferRecord = () => {
+    setTransferHistory([...transferHistory, { station: '', fromDate: '', toDate: '' }]);
+  };
+
+  const removeTransferRecord = (index: number) => {
+    const updatedHistory = transferHistory.filter((_, i) => i !== index);
+    setTransferHistory(updatedHistory);
+  };
+
+
   React.useEffect(() => {
     const ob = Number(obtainedMarks);
     const tot = Number(totalMarks);
@@ -217,7 +235,7 @@ export default function EmployeesPage() {
               Add Employee
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
               <DialogDescription>
@@ -353,18 +371,35 @@ export default function EmployeesPage() {
                     </div>
                 </div>
 
-                {selectedEmployee && selectedEmployee.transferHistory.length > 0 && (
-                  <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="text-lg font-medium">Service History</h3>
-                    <ul className="space-y-2">
-                      {selectedEmployee.transferHistory.map((transfer, index) => (
-                        <li key={index} className="text-sm text-muted-foreground">
-                          - Served at <span className="font-semibold">{transfer.station}</span> from {format(new Date(transfer.fromDate), "dd MMM, yyyy")} to {transfer.toDate ? format(new Date(transfer.toDate), "dd MMM, yyyy") : 'Present'}.
-                        </li>
-                      ))}
-                    </ul>
+                <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium">Service History</h3>
+                  <div className="space-y-4">
+                    {transferHistory.map((transfer, index) => (
+                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                        <div className="space-y-2 sm:col-span-1">
+                          <Label htmlFor={`transfer_station_${index}`}>Section/Station</Label>
+                          <Input id={`transfer_station_${index}`} value={transfer.station} onChange={(e) => handleTransferChange(index, 'station', e.target.value)} placeholder="e.g. West Zone" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`transfer_from_${index}`}>From Date</Label>
+                          <Input id={`transfer_from_${index}`} type="date" value={transfer.fromDate ? format(new Date(transfer.fromDate), 'yyyy-MM-dd') : ''} onChange={(e) => handleTransferChange(index, 'fromDate', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`transfer_to_${index}`}>To Date</Label>
+                          <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate ? format(new Date(transfer.toDate), 'yyyy-MM-dd') : ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => removeTransferRecord(index)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove Transfer</span>
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                )}
+                  <Button type="button" variant="outline" size="sm" onClick={addTransferRecord}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Transfer Record
+                  </Button>
+                </div>
               </div>
               <DialogFooter className="pt-6">
                 <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>
