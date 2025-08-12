@@ -36,6 +36,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
 
 const designations = [
     "Software Engineer",
@@ -351,6 +352,19 @@ export default function EmployeesPage() {
                         </div>
                     </div>
                 </div>
+
+                {selectedEmployee && selectedEmployee.transferHistory.length > 0 && (
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium">Service History</h3>
+                    <ul className="space-y-2">
+                      {selectedEmployee.transferHistory.map((transfer, index) => (
+                        <li key={index} className="text-sm text-muted-foreground">
+                          - Served at <span className="font-semibold">{transfer.station}</span> from {format(new Date(transfer.fromDate), "dd MMM, yyyy")} to {transfer.toDate ? format(new Date(transfer.toDate), "dd MMM, yyyy") : 'Present'}.
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               <DialogFooter className="pt-6">
                 <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>
