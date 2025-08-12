@@ -58,6 +58,9 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                        <div className="text-sm text-muted-foreground">
                         {employee.designation}
                       </div>
+                       <div className="text-sm text-muted-foreground">
+                        DOB: {format(new Date(employee.dateOfBirth), "dd MMM, yyyy")}
+                      </div>
                     </div>
                   </div>
                 </TableCell>

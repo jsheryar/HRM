@@ -36,6 +36,22 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 
+const designations = [
+    "Software Engineer",
+    "HR Manager",
+    "Labourer",
+    "Accountant",
+    "Marketing Executive",
+    "Supervisor",
+    "System Analyst",
+    "HR Assistant",
+    "Senior Accountant",
+    "UI/UX Designer",
+    "Zonal Manager",
+    "Digital Marketer",
+    "DevOps Engineer"
+];
+
 export default function EmployeesPage() {
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
@@ -67,12 +83,13 @@ export default function EmployeesPage() {
       location: formData.get("location") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
       zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
-      dateOfAppointment: selectedEmployee?.dateOfAppointment || new Date().toISOString().split('T')[0],
+      dateOfAppointment: formData.get("dateOfAppointment") as string,
+      dateOfBirth: formData.get("dateOfBirth") as string,
       transferHistory: selectedEmployee?.transferHistory || [],
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.location || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.location || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth) {
         toast({
             title: "Error",
             description: "Please fill out all fields.",
@@ -184,8 +201,15 @@ export default function EmployeesPage() {
                   <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="designation">Designation</Label>
-                  <Input id="designation" name="designation" defaultValue={selectedEmployee?.designation} required />
+                    <Label htmlFor="designation">Designation</Label>
+                    <Select name="designation" defaultValue={selectedEmployee?.designation} required>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a designation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
@@ -224,6 +248,10 @@ export default function EmployeesPage() {
                  <div className="space-y-2">
                   <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
                   <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
                 </div>
               </div>
               <DialogFooter>
