@@ -19,7 +19,6 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
@@ -36,7 +35,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
+import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 
 const designations = [
     "Software Engineer",
@@ -197,6 +196,24 @@ export default function EmployeesPage() {
     const updatedHistory = transferHistory.filter((_, i) => i !== index);
     setTransferHistory(updatedHistory);
   };
+  
+  const calculateTenure = (from: string, to: string | null) => {
+    const fromDate = parseISO(from);
+    const toDate = to ? parseISO(to) : new Date();
+
+    if (!isValid(fromDate) || !isValid(toDate) || fromDate > toDate) {
+      return 'Invalid dates';
+    }
+    
+    const duration = intervalToDuration({ start: fromDate, end: toDate });
+    
+    let tenure = '';
+    if (duration.years) tenure += `${duration.years}y `;
+    if (duration.months) tenure += `${duration.months}m `;
+    if (duration.days) tenure += `${duration.days}d`;
+    
+    return tenure.trim() || "0d";
+  }
 
 
   React.useEffect(() => {
@@ -377,7 +394,7 @@ export default function EmployeesPage() {
                   <h3 className="text-lg font-medium">Service History</h3>
                   <div className="space-y-4">
                     {transferHistory.map((transfer, index) => (
-                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                      <div key={index} className="grid gap-4 sm:grid-cols-5 items-end">
                         <div className="space-y-2 sm:col-span-1">
                           <Label htmlFor={`transfer_station_${index}`}>Section/Station</Label>
                            <Select value={transfer.station} onValueChange={(value) => handleTransferChange(index, 'station', value)}>
@@ -396,6 +413,10 @@ export default function EmployeesPage() {
                         <div className="space-y-2">
                           <Label htmlFor={`transfer_to_${index}`}>To Date</Label>
                           <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate ? format(new Date(transfer.toDate), 'yyyy-MM-dd') : ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`transfer_tenure_${index}`}>Tenure</Label>
+                           <Input id={`transfer_tenure_${index}`} value={calculateTenure(transfer.fromDate, transfer.toDate)} readOnly className="bg-muted" />
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => removeTransferRecord(index)} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
