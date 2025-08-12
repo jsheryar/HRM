@@ -19,6 +19,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
@@ -198,6 +199,7 @@ export default function EmployeesPage() {
   };
   
   const calculateTenure = (from: string, to: string | null) => {
+    if (!from) return '';
     const fromDate = parseISO(from);
     const toDate = to ? parseISO(to) : new Date();
 
