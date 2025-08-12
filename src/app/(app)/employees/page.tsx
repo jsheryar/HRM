@@ -56,6 +56,8 @@ const designations = [
 
 const bpsLevels = Array.from({ length: 20 }, (_, i) => `BPS-${String(i + 1).padStart(2, '0')}`);
 
+const stationOptions = ["Head Office", "Zonal Office", "Labour Colony"];
+
 
 export default function EmployeesPage() {
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
@@ -378,7 +380,14 @@ export default function EmployeesPage() {
                       <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
                         <div className="space-y-2 sm:col-span-1">
                           <Label htmlFor={`transfer_station_${index}`}>Section/Station</Label>
-                          <Input id={`transfer_station_${index}`} value={transfer.station} onChange={(e) => handleTransferChange(index, 'station', e.target.value)} placeholder="e.g. West Zone" />
+                           <Select value={transfer.station} onValueChange={(value) => handleTransferChange(index, 'station', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a station" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {stationOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor={`transfer_from_${index}`}>From Date</Label>
