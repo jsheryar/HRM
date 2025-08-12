@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { Employee } from "@/lib/data";
+import { format } from "date-fns";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -27,10 +28,10 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
         <TableHeader>
           <TableRow>
             <TableHead>Employee</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Department</TableHead>
-            <TableHead>Location</TableHead>
             <TableHead>Contact</TableHead>
+            <TableHead>Appointment</TableHead>
+            <TableHead>Transfer History</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -41,33 +42,52 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                 <TableCell>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={employee.photo} alt={employee.name} data-ai-hint="person avatar" />
+                      <AvatarImage src={employee.photo} alt={employee.fullName} data-ai-hint="person avatar" />
                       <AvatarFallback>
-                        {employee.name
+                        {employee.fullName
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{employee.name}</div>
+                      <div className="font-medium">{employee.fullName}</div>
                       <div className="text-sm text-muted-foreground">
+                        S/o {employee.fatherName}
+                      </div>
+                       <div className="text-sm text-muted-foreground">
                         {employee.designation}
                       </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
+                  <div className="font-medium">{employee.mobileNumber}</div>
+                  <div className="text-sm text-muted-foreground">{employee.email}</div>
+                  <div className="text-sm text-muted-foreground">CNIC: {employee.cnic}</div>
+                </TableCell>
+                <TableCell>
+                  <div className="font-medium">{format(new Date(employee.dateOfAppointment), "dd MMM, yyyy")}</div>
+                  <div className="text-sm text-muted-foreground">{employee.stationOfAppointment}</div>
+                </TableCell>
+                 <TableCell>
+                  {employee.transferHistory.length > 0 ? (
+                    <ul className="text-sm text-muted-foreground list-disc pl-4">
+                      {employee.transferHistory.map((t, i) => (
+                        <li key={i}>
+                          {t.station} ({format(new Date(t.fromDate), "MMM yyyy")} - {t.toDate ? format(new Date(t.toDate), "MMM yyyy") : 'Present'})
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No transfers</span>
+                  )}
+                </TableCell>
+                <TableCell>
                   <Badge variant={employee.status === 'Active' ? 'default' : 'destructive'} className={employee.status === 'Active' ? 'bg-green-500' : ''}>
                     {employee.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{employee.department}</TableCell>
-                <TableCell>
-                  <div className="font-medium">{employee.location}</div>
-                  <div className="text-sm text-muted-foreground">{employee.zone}</div>
-                </TableCell>
-                <TableCell>{employee.email}</TableCell>
                 <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => onEdit(employee)}>
                         <Pencil className="h-4 w-4" />

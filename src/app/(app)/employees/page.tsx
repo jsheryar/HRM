@@ -55,7 +55,11 @@ export default function EmployeesPage() {
     const formData = new FormData(e.currentTarget);
     const employeeData = {
       id: selectedEmployee?.id || `EMP${String(employeeList.length + 1).padStart(3, '0')}`,
-      name: formData.get("name") as string,
+      fullName: formData.get("fullName") as string,
+      fatherName: formData.get("fatherName") as string,
+      cnic: formData.get("cnic") as string,
+      mobileNumber: formData.get("mobileNumber") as string,
+      stationOfAppointment: formData.get("stationOfAppointment") as string,
       email: formData.get("email") as string,
       photo: selectedEmployee?.photo || 'https://placehold.co/100x100.png',
       department: formData.get("department") as string,
@@ -63,11 +67,12 @@ export default function EmployeesPage() {
       location: formData.get("location") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
       zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
-      joiningDate: selectedEmployee?.joiningDate || new Date().toISOString().split('T')[0],
+      dateOfAppointment: selectedEmployee?.dateOfAppointment || new Date().toISOString().split('T')[0],
+      transferHistory: selectedEmployee?.transferHistory || [],
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.name || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.location || !employeeData.zone || !employeeData.employmentType) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.location || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment) {
         toast({
             title: "Error",
             description: "Please fill out all fields.",
@@ -145,7 +150,7 @@ export default function EmployeesPage() {
               Add Employee
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
               <DialogDescription>
@@ -153,27 +158,39 @@ export default function EmployeesPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleFormSubmit}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input id="name" name="name" className="col-span-3" defaultValue={selectedEmployee?.name} required />
+              <div className="grid gap-4 py-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">Email</Label>
-                  <Input id="email" name="email" type="email" className="col-span-3" defaultValue={selectedEmployee?.email} required />
+                <div className="space-y-2">
+                  <Label htmlFor="fatherName">Father's Name</Label>
+                  <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="department" className="text-right">Department</Label>
-                  <Input id="department" name="department" className="col-span-3" defaultValue={selectedEmployee?.department} required />
+                 <div className="space-y-2">
+                  <Label htmlFor="cnic">CNIC Number</Label>
+                  <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="designation" className="text-right">Designation</Label>
-                  <Input id="designation" name="designation" className="col-span-3" defaultValue={selectedEmployee?.designation} required />
+                <div className="space-y-2">
+                  <Label htmlFor="mobileNumber">Mobile Number</Label>
+                  <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="location" className="text-right">Location</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="designation">Designation</Label>
+                  <Input id="designation" name="designation" defaultValue={selectedEmployee?.designation} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
                     <Select name="location" defaultValue={selectedEmployee?.location} required>
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger>
                             <SelectValue placeholder="Select a location" />
                         </SelectTrigger>
                         <SelectContent>
@@ -183,14 +200,14 @@ export default function EmployeesPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="zone" className="text-right">Zone</Label>
-                  <Input id="zone" name="zone" className="col-span-3" defaultValue={selectedEmployee?.zone} required />
+                <div className="space-y-2">
+                  <Label htmlFor="zone">Zone</Label>
+                  <Input id="zone" name="zone" defaultValue={selectedEmployee?.zone} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="employmentType" className="text-right">Emp. Type</Label>
+                <div className="space-y-2">
+                    <Label htmlFor="employmentType">Emp. Type</Label>
                     <Select name="employmentType" defaultValue={selectedEmployee?.employmentType} required>
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger>
                             <SelectValue placeholder="Select a type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -199,6 +216,14 @@ export default function EmployeesPage() {
                             <SelectItem value="Daily-wage">Daily-wage</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="stationOfAppointment">Station of Appointment</Label>
+                  <Input id="stationOfAppointment" name="stationOfAppointment" defaultValue={selectedEmployee?.stationOfAppointment} required />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
+                  <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
                 </div>
               </div>
               <DialogFooter>
