@@ -63,16 +63,41 @@ export default function EmployeesPage() {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = React.useState<string | null>(null);
+  const [obtainedMarks, setObtainedMarks] = React.useState<number | string>("");
+  const [totalMarks, setTotalMarks] = React.useState<number | string>("");
+  const [percentage, setPercentage] = React.useState<string>("");
   const { toast } = useToast();
   
   const openDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
+    if(employee && employee.education) {
+        // This is a simplified parsing. A more robust solution would be better.
+        const eduParts = employee.education.split(',');
+        const marksPart = eduParts.find(p => p.includes('/'));
+        if (marksPart) {
+            const [obtained, total] = marksPart.trim().split(' ')[0].split('/');
+            setObtainedMarks(Number(obtained));
+            setTotalMarks(Number(total));
+        } else {
+             setObtainedMarks("");
+             setTotalMarks("");
+        }
+    } else {
+        setObtainedMarks("");
+        setTotalMarks("");
+    }
     setIsDialogOpen(true);
   }
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    const institution = formData.get("institution") as string;
+    const degree = formData.get("degree") as string;
+    const completionDate = formData.get("completionDate") as string;
+    const educationRecord = `${institution}, ${degree}, ${completionDate}, ${obtainedMarks}/${totalMarks} (${percentage}%)`;
+
     const employeeData = {
       id: selectedEmployee?.id || `EMP${String(employeeList.length + 1).padStart(3, '0')}`,
       fullName: formData.get("fullName") as string,
@@ -85,7 +110,7 @@ export default function EmployeesPage() {
       department: formData.get("department") as string,
       designation: formData.get("designation") as string,
       bps: formData.get("bps") as string,
-      education: formData.get("education") as string,
+      education: educationRecord,
       station: formData.get("station") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
       zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
@@ -144,6 +169,24 @@ export default function EmployeesPage() {
     setEmployeeToDelete(null);
   }
 
+  const handleMarksChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'obtained' | 'total') => {
+      const value = e.target.value;
+      if (type === 'obtained') {
+          setObtainedMarks(value);
+      } else {
+          setTotalMarks(value);
+      }
+  }
+
+  React.useEffect(() => {
+    const ob = Number(obtainedMarks);
+    const tot = Number(totalMarks);
+    if(ob > 0 && tot > 0 && ob <= tot) {
+        setPercentage(((ob / tot) * 100).toFixed(2));
+    } else {
+        setPercentage("");
+    }
+  }, [obtainedMarks, totalMarks]);
 
   React.useEffect(() => {
     setFilteredEmployees(employeeList);
@@ -173,7 +216,7 @@ export default function EmployeesPage() {
               Add Employee
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-3xl">
+          <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
               <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
               <DialogDescription>
@@ -181,105 +224,135 @@ export default function EmployeesPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleFormSubmit}>
-              <div className="grid gap-4 py-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
+              <div className="space-y-6">
+                <div className="grid gap-4 py-4 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fatherName">Father's Name</Label>
+                      <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
+                    </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="cnic">CNIC Number</Label>
+                      <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mobileNumber">Mobile Number</Label>
+                      <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
+                    </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="photo">Photo URL</Label>
+                      <Input id="photo" name="photo" type="url" defaultValue={selectedEmployee?.photo} placeholder="https://placehold.co/100x100.png" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="department">Department</Label>
+                      <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="designation">Designation</Label>
+                        <Select name="designation" defaultValue={selectedEmployee?.designation} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a designation" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="bps">BPS</Label>
+                        <Select name="bps" defaultValue={selectedEmployee?.bps} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select BPS" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="station">Station</Label>
+                        <Select name="station" defaultValue={selectedEmployee?.station} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a station" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Head Office">Head Office</SelectItem>
+                                <SelectItem value="Zonal Office">Zonal Office</SelectItem>
+                                <SelectItem value="Labour Colony">Labour Colony</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zone">Zone</Label>
+                      <Input id="zone" name="zone" defaultValue={selectedEmployee?.zone} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="employmentType">Emp. Type</Label>
+                        <Select name="employmentType" defaultValue={selectedEmployee?.employmentType} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Permanent">Permanent</SelectItem>
+                                <SelectItem value="Contract">Contract</SelectItem>
+                                <SelectItem value="Daily-wage">Daily-wage</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="stationOfAppointment">Station of Appointment</Label>
+                      <Input id="stationOfAppointment" name="stationOfAppointment" defaultValue={selectedEmployee?.stationOfAppointment} required />
+                    </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
+                      <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                      <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
+                    </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fatherName">Father's Name</Label>
-                  <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="cnic">CNIC Number</Label>
-                  <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mobileNumber">Mobile Number</Label>
-                  <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="photo">Photo URL</Label>
-                  <Input id="photo" name="photo" type="url" defaultValue={selectedEmployee?.photo} placeholder="https://placehold.co/100x100.png" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="designation">Designation</Label>
-                    <Select name="designation" defaultValue={selectedEmployee?.designation} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a designation" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="bps">BPS</Label>
-                    <Select name="bps" defaultValue={selectedEmployee?.bps} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select BPS" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="station">Station</Label>
-                    <Select name="station" defaultValue={selectedEmployee?.station} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a station" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Head Office">Head Office</SelectItem>
-                            <SelectItem value="Zonal Office">Zonal Office</SelectItem>
-                            <SelectItem value="Labour Colony">Labour Colony</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zone">Zone</Label>
-                  <Input id="zone" name="zone" defaultValue={selectedEmployee?.zone} required />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="employmentType">Emp. Type</Label>
-                    <Select name="employmentType" defaultValue={selectedEmployee?.employmentType} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Permanent">Permanent</SelectItem>
-                            <SelectItem value="Contract">Contract</SelectItem>
-                            <SelectItem value="Daily-wage">Daily-wage</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="stationOfAppointment">Station of Appointment</Label>
-                  <Input id="stationOfAppointment" name="stationOfAppointment" defaultValue={selectedEmployee?.stationOfAppointment} required />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
-                  <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
-                </div>
-                 <div className="space-y-2 sm:col-span-3">
-                  <Label htmlFor="education">Education Record</Label>
-                  <Textarea id="education" name="education" defaultValue={selectedEmployee?.education} placeholder="e.g. University of Example, MSc Computer Science, 2022, 850/1000 (85%)"/>
+
+                <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium">Education Record</h3>
+                     <div className="grid gap-4 sm:grid-cols-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="institution">School/College/University</Label>
+                            <Input id="institution" name="institution" defaultValue={selectedEmployee?.education?.split(',')[0]} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="degree">Degree/Program</Label>
+                            <Input id="degree" name="degree" defaultValue={selectedEmployee?.education?.split(',')[1]}/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="completionDate">Completion Date</Label>
+                            <Input id="completionDate" name="completionDate" type="date" defaultValue={selectedEmployee?.education?.split(',')[2]}/>
+                        </div>
+                    </div>
+                     <div className="grid gap-4 sm:grid-cols-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="obtainedMarks">Obtained Marks</Label>
+                            <Input id="obtainedMarks" name="obtainedMarks" type="number" value={obtainedMarks} onChange={(e) => handleMarksChange(e, 'obtained')} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="totalMarks">Total Marks</Label>
+                            <Input id="totalMarks" name="totalMarks" type="number" value={totalMarks} onChange={(e) => handleMarksChange(e, 'total')} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="percentage">Percentage (%)</Label>
+                            <Input id="percentage" name="percentage" value={percentage} readOnly className="bg-muted"/>
+                        </div>
+                    </div>
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="pt-6">
                 <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>
               </DialogFooter>
             </form>
