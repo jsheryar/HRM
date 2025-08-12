@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 
 const designations = [
@@ -76,11 +75,10 @@ export default function EmployeesPage() {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     if(employee && employee.education) {
-        // This is a simplified parsing. A more robust solution would be better.
-        const eduParts = employee.education.split(',');
+        const eduParts = employee.education.split(',').map(p => p.trim());
         const marksPart = eduParts.find(p => p.includes('/'));
         if (marksPart) {
-            const [obtained, total] = marksPart.trim().split(' ')[0].split('/');
+            const [obtained, total] = marksPart.split(' ')[0].split('/');
             setObtainedMarks(Number(obtained));
             setTotalMarks(Number(total));
         } else {
@@ -101,7 +99,7 @@ export default function EmployeesPage() {
     const institution = formData.get("institution") as string;
     const degree = formData.get("degree") as string;
     const completionDate = formData.get("completionDate") as string;
-    const educationRecord = `${institution}, ${degree}, ${completionDate}, ${obtainedMarks}/${totalMarks} (${percentage}%)`;
+    const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
 
     const employeeData = {
       id: selectedEmployee?.id || `EMP${String(employeeList.length + 1).padStart(3, '0')}`,
@@ -410,11 +408,11 @@ export default function EmployeesPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor={`transfer_from_${index}`}>From Date</Label>
-                          <Input id={`transfer_from_${index}`} type="date" value={transfer.fromDate ? format(new Date(transfer.fromDate), 'yyyy-MM-dd') : ''} onChange={(e) => handleTransferChange(index, 'fromDate', e.target.value)} />
+                          <Input id={`transfer_from_${index}`} type="date" value={transfer.fromDate} onChange={(e) => handleTransferChange(index, 'fromDate', e.target.value)} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor={`transfer_to_${index}`}>To Date</Label>
-                          <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate ? format(new Date(transfer.toDate), 'yyyy-MM-dd') : ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
+                          <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate || ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor={`transfer_tenure_${index}`}>Tenure</Label>
@@ -479,3 +477,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    
