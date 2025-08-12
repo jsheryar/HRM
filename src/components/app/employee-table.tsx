@@ -56,10 +56,13 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                         S/o {employee.fatherName}
                       </div>
                        <div className="text-sm text-muted-foreground">
-                        {employee.designation}
+                        {employee.designation} ({employee.bps})
                       </div>
                        <div className="text-sm text-muted-foreground">
                         DOB: {format(new Date(employee.dateOfBirth), "dd MMM, yyyy")}
+                      </div>
+                       <div className="text-sm text-muted-foreground">
+                        Education: {employee.education}
                       </div>
                     </div>
                   </div>

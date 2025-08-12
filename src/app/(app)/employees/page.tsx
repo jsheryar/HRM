@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const designations = [
     "Software Engineer",
@@ -51,6 +52,9 @@ const designations = [
     "Digital Marketer",
     "DevOps Engineer"
 ];
+
+const bpsLevels = Array.from({ length: 20 }, (_, i) => `BPS-${String(i + 1).padStart(2, '0')}`);
+
 
 export default function EmployeesPage() {
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
@@ -77,9 +81,11 @@ export default function EmployeesPage() {
       mobileNumber: formData.get("mobileNumber") as string,
       stationOfAppointment: formData.get("stationOfAppointment") as string,
       email: formData.get("email") as string,
-      photo: selectedEmployee?.photo || 'https://placehold.co/100x100.png',
+      photo: formData.get("photo") as string,
       department: formData.get("department") as string,
       designation: formData.get("designation") as string,
+      bps: formData.get("bps") as string,
+      education: formData.get("education") as string,
       station: formData.get("station") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
       zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
@@ -89,10 +95,10 @@ export default function EmployeesPage() {
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
         toast({
             title: "Error",
-            description: "Please fill out all fields.",
+            description: "Please fill out all required fields.",
             variant: "destructive",
         });
         return;
@@ -167,7 +173,7 @@ export default function EmployeesPage() {
               Add Employee
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-xl">
+          <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
               <DialogDescription>
@@ -175,7 +181,7 @@ export default function EmployeesPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleFormSubmit}>
-              <div className="grid gap-4 py-4 sm:grid-cols-2">
+              <div className="grid gap-4 py-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
                   <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
@@ -196,6 +202,10 @@ export default function EmployeesPage() {
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
                 </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="photo">Photo URL</Label>
+                  <Input id="photo" name="photo" type="url" defaultValue={selectedEmployee?.photo} placeholder="https://placehold.co/100x100.png" required />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
                   <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
@@ -208,6 +218,17 @@ export default function EmployeesPage() {
                         </SelectTrigger>
                         <SelectContent>
                             {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="bps">BPS</Label>
+                    <Select name="bps" defaultValue={selectedEmployee?.bps} required>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select BPS" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -252,6 +273,10 @@ export default function EmployeesPage() {
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
                   <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
+                </div>
+                 <div className="space-y-2 sm:col-span-3">
+                  <Label htmlFor="education">Education Record</Label>
+                  <Textarea id="education" name="education" defaultValue={selectedEmployee?.education} placeholder="Enter educational qualifications..."/>
                 </div>
               </div>
               <DialogFooter>
