@@ -40,16 +40,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      if(pathname === '/login') {
-         router.push(parsedUser.role === 'admin' ? '/' : '/my-profile');
-      }
-    } else if (pathname !== '/login') {
-      router.push('/login');
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
-  }, [router, pathname]);
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      if (user && pathname === '/login') {
+        const redirectPath = user.role === 'admin' ? '/' : '/my-profile';
+        router.push(redirectPath);
+      } else if (!user && pathname !== '/login') {
+        router.push('/login');
+      }
+    }
+  }, [user, loading, pathname, router]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
