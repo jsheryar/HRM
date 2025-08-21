@@ -40,7 +40,7 @@ export default function MyProfilePage() {
 
   React.useEffect(() => {
     if(user?.role === 'employee') {
-      const foundEmployee = employees.find(e => e.id === user.id);
+      const foundEmployee = employees.find(e => e.cnic === user.id);
       setEmployee(foundEmployee || null);
     }
   }, [user]);
@@ -97,7 +97,7 @@ export default function MyProfilePage() {
                     <CardTitle>Employment Details</CardTitle>
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                    <div><span className="font-medium">Employee ID:</span> {employee.id}</div>
+                    <div><span className="font-medium">Employee ID:</span> {employee.cnic}</div>
                     <div><span className="font-medium">Department:</span> {employee.department}</div>
                     <div><span className="font-medium">BPS:</span> {employee.bps}</div>
                     <div><span className="font-medium">Employment Type:</span> {employee.employmentType}</div>

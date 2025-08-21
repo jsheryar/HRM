@@ -31,7 +31,7 @@ export default function LeaveRecordPage() {
   };
   
   const getEmployeeName = (id: string) => {
-    return employees.find(e => e.id === id)?.fullName || "Unknown";
+    return employees.find(e => e.cnic === id)?.fullName || "Unknown";
   }
 
   const handleRequestStatusChange = (requestId: string, newStatus: 'Approved' | 'Rejected') => {
@@ -76,7 +76,7 @@ export default function LeaveRecordPage() {
     };
 
     setLeaveRequests(currentRequests => [...currentRequests, newRequest]);
-    const employeeName = employees.find(emp => emp.id === employeeId)?.fullName || "Unknown";
+    const employeeName = employees.find(emp => emp.cnic === employeeId)?.fullName || "Unknown";
 
     toast({
         title: "Leave Request Submitted",
@@ -133,7 +133,7 @@ export default function LeaveRecordPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {employees.map(employee => (
-                        <SelectItem key={employee.id} value={employee.id}>{employee.fullName}</SelectItem>
+                        <SelectItem key={employee.cnic} value={employee.cnic}>{employee.fullName}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

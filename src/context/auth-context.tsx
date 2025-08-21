@@ -27,7 +27,7 @@ const adminUser = {
   email: 'admin@zoneflow.com',
   role: 'admin' as const,
   photo: 'https://placehold.co/40x40.png',
-  password: 'adminpassword' // Added for consistency
+  password: 'adminpassword'
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const employee = employees.find(emp => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
-          id: employee.id,
+          id: employee.cnic, // Use CNIC as the user ID
           name: employee.fullName,
           email: employee.email,
           role: 'employee',
@@ -103,5 +103,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
