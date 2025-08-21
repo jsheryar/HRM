@@ -1,7 +1,7 @@
 
 "use client"
 import * as React from "react";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays, format, parseISO, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,6 +104,16 @@ export default function LeaveRecordPage() {
         setEmployeeId(user.id);
     }
   }, [user]);
+
+  const formatDateRange = (from: string, to: string) => {
+    if(!from || !to) return "Invalid Dates";
+    const fromDate = parseISO(from);
+    const toDate = parseISO(to);
+    if(isValid(fromDate) && isValid(toDate)) {
+      return `${format(fromDate, "PPP")} to ${format(toDate, "PPP")}`;
+    }
+    return "Invalid Dates";
+  }
 
   return (
     <div className="space-y-8">
@@ -233,7 +243,7 @@ export default function LeaveRecordPage() {
                             <TableRow key={request.id}>
                                 {isAdmin && <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>}
                                 <TableCell>{request.leaveType}</TableCell>
-                                <TableCell>{`${format(parseISO(request.fromDate), "PPP")} to ${format(parseISO(request.toDate), "PPP")}`}</TableCell>
+                                <TableCell>{formatDateRange(request.fromDate, request.toDate)}</TableCell>
                                 <TableCell>
                                     <Badge variant={
                                         request.status === 'Pending' ? 'secondary' : 

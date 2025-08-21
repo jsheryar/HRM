@@ -1,127 +1,362 @@
-"use client"
-import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, MinusCircle, PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+export type Transfer = {
+  station: string;
+  fromDate: string;
+  toDate: string | null;
+};
 
-export default function LeaveRecordPage() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [leaveType, setLeaveType] = React.useState<string>();
-  const { toast } = useToast();
+export type Employee = {
+  id: string;
+  fullName: string;
+  fatherName: string;
+  cnic: string;
+  password?: string;
+  mobileNumber: string;
+  email: string;
+  photo: string;
+  department: string;
+  designation: string;
+  bps: string;
+  education: string;
+  station: 'Head Office' | 'Zonal Office' | 'Labour Colony';
+  employmentType: 'Permanent' | 'Contract' | 'Daily-wage';
+  dateOfAppointment: string;
+  dateOfBirth: string;
+  transferHistory: Transfer[];
+  status: 'Active' | 'Inactive';
+};
 
-  const leaveBalances = {
-    "Annual Leave": 12,
-    "Sick Leave": 8,
-    "Casual Leave": 5,
-  };
+export type LeaveRequest = {
+  id: string;
+  employeeId: string;
+  leaveType: string;
+  fromDate: string;
+  toDate: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!date || !leaveType) {
-        toast({
-            title: "Incomplete Form",
-            description: "Please select a date and leave type.",
-            variant: "destructive"
-        });
-        return;
-    }
-    
-    // Mock AI check for negative balance
-    if (leaveBalances[leaveType as keyof typeof leaveBalances] <= 0) {
-      toast({
-          title: "AI Check Failed",
-          description: "Cannot request leave. Your balance for this leave type is zero or negative.",
-          variant: "destructive"
-      });
-      return;
-    }
+export type LeavePolicy = {
+  id: string;
+  type: string;
+  balance: number;
+};
 
-    toast({
-        title: "Leave Request Submitted",
-        description: `Your request for ${leaveType} on ${format(date, "PPP")} has been submitted for approval.`,
-    });
-  };
+export const employees: Employee[] = [
+  {
+    id: '12345-1234567-1',
+    fullName: 'Aarav Sharma',
+    fatherName: 'Suresh Sharma',
+    cnic: '12345-1234567-1',
+    password: 'password',
+    mobileNumber: '0300-1234567',
+    email: 'aarav.sharma@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Technology',
+    designation: 'Software Engineer',
+    bps: 'BPS-17',
+    education: 'M.Sc. Computer Science',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2022-08-15',
+    dateOfBirth: '1995-02-20',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-2',
+    fullName: 'Diya Patel',
+    fatherName: 'Ramesh Patel',
+    cnic: '12345-1234567-2',
+    password: 'password',
+    mobileNumber: '0300-2345678',
+    email: 'diya.patel@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Human Resources',
+    designation: 'HR Manager',
+    bps: 'BPS-18',
+    education: 'MBA in HR',
+    station: 'Zonal Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2021-05-20',
+    dateOfBirth: '1990-08-10',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-3',
+    fullName: 'Rohan Kumar',
+    fatherName: 'Anil Kumar',
+    cnic: '12345-1234567-3',
+    password: 'password',
+    mobileNumber: '0300-3456789',
+    email: 'rohan.kumar@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Operations',
+    designation: 'Labourer',
+    bps: 'BPS-02',
+    education: 'Matric',
+    station: 'Labour Colony',
+    employmentType: 'Daily-wage',
+    dateOfAppointment: '2023-01-10',
+    dateOfBirth: '1998-12-05',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-4',
+    fullName: 'Priya Singh',
+    fatherName: 'Vikram Singh',
+    cnic: '12345-1234567-4',
+    password: 'password',
+    mobileNumber: '0300-4567890',
+    email: 'priya.singh@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Finance',
+    designation: 'Accountant',
+    bps: 'BPS-16',
+    education: 'B.Com',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2020-11-30',
+    dateOfBirth: '1992-06-25',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-5',
+    fullName: 'Amit Kumar',
+    fatherName: 'Sunil Kumar',
+    cnic: '12345-1234567-5',
+    password: 'password',
+    mobileNumber: '0300-5678901',
+    email: 'amit.kumar@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Marketing',
+    designation: 'Marketing Executive',
+    bps: 'BPS-16',
+    education: 'MBA in Marketing',
+    station: 'Zonal Office',
+    employmentType: 'Contract',
+    dateOfAppointment: '2023-03-01',
+    dateOfBirth: '1996-04-12',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-6',
+    fullName: 'Sunita Devi',
+    fatherName: 'Rajesh Devi',
+    cnic: '12345-1234567-6',
+    password: 'password',
+    mobileNumber: '0300-6789012',
+    email: 'sunita.devi@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Operations',
+    designation: 'Supervisor',
+    bps: 'BPS-14',
+    education: 'Intermediate',
+    station: 'Labour Colony',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2019-07-22',
+    dateOfBirth: '1988-11-30',
+    transferHistory: [
+      { station: 'Colony 5', fromDate: '2021-01-01', toDate: '2022-12-31' },
+    ],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-7',
+    fullName: 'Vikram Rathod',
+    fatherName: 'Sanjay Rathod',
+    cnic: '12345-1234567-7',
+    password: 'password',
+    mobileNumber: '0300-7890123',
+    email: 'vikram.rathod@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Technology',
+    designation: 'System Analyst',
+    bps: 'BPS-17',
+    education: 'B.E. in IT',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2022-09-01',
+    dateOfBirth: '1993-01-15',
+    transferHistory: [],
+    status: 'Inactive',
+  },
+  {
+    id: '12345-1234567-8',
+    fullName: 'Anjali Verma',
+    fatherName: 'Ravi Verma',
+    cnic: '12345-1234567-8',
+    password: 'password',
+    mobileNumber: '0300-8901234',
+    email: 'anjali.verma@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Human Resources',
+    designation: 'HR Assistant',
+    bps: 'BPS-15',
+    education: 'BBA in HR',
+    station: 'Zonal Office',
+    employmentType: 'Contract',
+    dateOfAppointment: '2023-06-12',
+    dateOfBirth: '1997-07-07',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '12345-1234567-9',
+    fullName: 'Manoj Yadav',
+    fatherName: 'Dinesh Yadav',
+    cnic: '12345-1234567-9',
+    password: 'password',
+    mobileNumber: '0300-9012345',
+    email: 'manoj.yadav@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Operations',
+    designation: 'Labourer',
+    bps: 'BPS-02',
+    education: 'Middle',
+    station: 'Labour Colony',
+    employmentType: 'Daily-wage',
+    dateOfAppointment: '2023-02-18',
+    dateOfBirth: '2000-03-22',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '23456-2345678-0',
+    fullName: 'Sneha Reddy',
+    fatherName: 'Arjun Reddy',
+    cnic: '23456-2345678-0',
+    password: 'password',
+    mobileNumber: '0301-1234567',
+    email: 'sneha.reddy@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Finance',
+    designation: 'Senior Accountant',
+    bps: 'BPS-18',
+    education: 'M.Com',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2018-04-16',
+    dateOfBirth: '1991-09-18',
+    transferHistory: [],
+    status: 'Active',
+  },
+    {
+    id: '23456-2345678-1',
+    fullName: 'Kavita Gupta',
+    fatherName: 'Ashok Gupta',
+    cnic: '23456-2345678-1',
+    password: 'password',
+    mobileNumber: '0301-2345678',
+    email: 'kavita.gupta@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Technology',
+    designation: 'UI/UX Designer',
+    bps: 'BPS-17',
+    education: 'B.Design',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2022-11-10',
+    dateOfBirth: '1994-10-28',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '23456-2345678-2',
+    fullName: 'Rajesh Mehra',
+    fatherName: 'Vijay Mehra',
+    cnic: '23456-2345678-2',
+    password: 'password',
+    mobileNumber: '0301-3456789',
+    email: 'rajesh.mehra@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Operations',
+    designation: 'Zonal Manager',
+    bps: 'BPS-19',
+    education: 'M.A. Public Administration',
+    station: 'Zonal Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2017-09-05',
+    dateOfBirth: '1985-05-14',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '23456-2345678-3',
+    fullName: 'Suresh Ram',
+    fatherName: 'Gopal Ram',
+    cnic: '23456-2345678-3',
+    password: 'password',
+    mobileNumber: '0301-4567890',
+    email: 'suresh.ram@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Operations',
+    designation: 'Labourer',
+    bps: 'BPS-01',
+    education: 'Primary',
+    station: 'Labour Colony',
+    employmentType: 'Daily-wage',
+    dateOfAppointment: '2023-04-02',
+    dateOfBirth: '1999-01-01',
+    transferHistory: [],
+    status: 'Inactive',
+  },
+  {
+    id: '23456-2345678-4',
+    fullName: 'Neha Desai',
+    fatherName: 'Mahesh Desai',
+    cnic: '23456-2345678-4',
+    password: 'password',
+    mobileNumber: '0301-5678901',
+    email: 'neha.desai@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Marketing',
+    designation: 'Digital Marketer',
+    bps: 'BPS-16',
+    education: 'B.Sc. Media Sciences',
+    station: 'Zonal Office',
+    employmentType: 'Contract',
+    dateOfAppointment: '2022-08-20',
+    dateOfBirth: '1996-08-20',
+    transferHistory: [],
+    status: 'Active',
+  },
+  {
+    id: '23456-2345678-5',
+    fullName: 'Arjun Singh',
+    fatherName: 'Ranbir Singh',
+    cnic: '23456-2345678-5',
+    password: 'password',
+    mobileNumber: '0301-6789012',
+    email: 'arjun.singh@example.com',
+    photo: 'https://placehold.co/100x100.png',
+    department: 'Technology',
+    designation: 'DevOps Engineer',
+    bps: 'BPS-17',
+    education: 'B.S. Software Engineering',
+    station: 'Head Office',
+    employmentType: 'Permanent',
+    dateOfAppointment: '2021-12-01',
+    dateOfBirth: '1992-03-03',
+    transferHistory: [],
+    status: 'Active',
+  },
+];
 
 
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-headline font-bold tracking-tight">Leave Record</h1>
-        <p className="text-muted-foreground">Manage your leave requests and balances.</p>
-      </div>
+export const leaveRequests: LeaveRequest[] = [
+    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', fromDate: '2024-07-29', toDate: '2024-07-30', status: 'Pending' },
+    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', fromDate: '2024-07-28', toDate: '2024-07-28', status: 'Pending' },
+    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', fromDate: '2024-08-01', toDate: '2024-08-02', status: 'Approved' },
+    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', fromDate: '2024-08-05', toDate: '2024-08-07', status: 'Rejected' },
+];
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(leaveBalances).map(([type, days]) => (
-            <Card key={type}>
-                <CardHeader>
-                    <CardTitle>{type}</CardTitle>
-                    <CardDescription>Days remaining</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-4xl font-bold">{days}</p>
-                </CardContent>
-            </Card>
-        ))}
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>New Leave Request</CardTitle>
-          <CardDescription>Submit a new request for time off. It will be sent to your manager for approval.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Leave Type</label>
-                <Select onValueChange={setLeaveType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a leave type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Annual Leave">Annual Leave</SelectItem>
-                    <SelectItem value="Sick Leave">Sick Leave</SelectItem>
-                    <SelectItem value="Casual Leave">Casual Leave</SelectItem>
-                    <SelectItem value="Unpaid Leave">Unpaid Leave</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <Button type="submit">Submit Request</Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+export const leavePolicies: LeavePolicy[] = [
+    { id: 'LPOL001', type: 'Annual Leave', balance: 12 },
+    { id: 'LPOL002', type: 'Sick Leave', balance: 8 },
+    { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
+    { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
+];
