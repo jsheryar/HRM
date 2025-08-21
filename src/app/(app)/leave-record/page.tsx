@@ -20,8 +20,11 @@ export default function LeaveRecordPage() {
   const { user, employees, leaveRequests, setLeaveRequests } = useAuth();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
-  const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'admin' ? undefined : user?.id);
+  // Default to the logged-in user if they are an employee, otherwise undefined for admin
+  const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'employee' ? user.id : undefined);
   const { toast } = useToast();
+
+  const isAdmin = user?.role === 'admin';
 
   const leaveBalances = {
     "Annual Leave": 12,
@@ -51,7 +54,7 @@ export default function LeaveRecordPage() {
     if (!date || !leaveType || !employeeId) {
         toast({
             title: "Incomplete Form",
-            description: "Please select a leave type and date.",
+            description: "Please select an employee, leave type, and date.",
             variant: "destructive"
         });
         return;
@@ -81,13 +84,21 @@ export default function LeaveRecordPage() {
         title: "Leave Request Submitted",
         description: `Request for ${employeeName} for ${leaveType} on ${format(date, "PPP")} has been submitted for approval.`,
     });
+    
+    // Reset form
+    setDate(new Date());
+    setLeaveType(undefined);
+    if(isAdmin) {
+        setEmployeeId(undefined);
+    }
   };
 
-  const isAdmin = user?.role === 'admin';
+  
   const displayedLeaveRequests = isAdmin
     ? leaveRequests
     : leaveRequests.filter(req => req.employeeId === user?.id);
 
+  // Effect to set employeeId if the logged-in user is an employee
   React.useEffect(() => {
     if (user?.role === 'employee') {
         setEmployeeId(user.id);
@@ -122,7 +133,7 @@ export default function LeaveRecordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className={`grid gap-4 ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
                {isAdmin && (
                 <div className="space-y-2">
                   <Label>Employee</Label>
@@ -238,5 +249,3 @@ export default function LeaveRecordPage() {
     </div>
   );
 }
-
-    

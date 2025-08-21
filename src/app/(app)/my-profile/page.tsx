@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/lib/data";
-import { format, isValid, parseISO } from "date-fns";
+import { format, isValid, parseISO, intervalToDuration } from "date-fns";
 import { useAuth } from "@/context/auth-context";
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+    const date = parseISO(dateString);
     if (isValid(date)) {
       return format(date, "dd MMM, yyyy");
     }
@@ -19,17 +19,14 @@ const formatDate = (dateString: string | null) => {
 
 const formatTenure = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+    const date = parseISO(dateString);
     if (isValid(date)) {
         const today = new Date();
-        const years = today.getFullYear() - date.getFullYear();
-        const months = today.getMonth() - date.getMonth();
+        const duration = intervalToDuration({ start: date, end: today });
         let tenure = "";
-        if(years > 0) tenure += `${years} years, `;
-        if(months >= 0) tenure += `${months} months`;
-        else tenure += `${12+months} months`
-
-        return tenure;
+        if (duration.years) tenure += `${duration.years} years, `;
+        if(duration.months) tenure += `${duration.months} months`;
+        return tenure || "0 months";
     }
     return 'Invalid date';
 }
@@ -42,6 +39,9 @@ export default function MyProfilePage() {
     if(user?.role === 'employee') {
       const foundEmployee = employees.find(e => e.cnic === user.id);
       setEmployee(foundEmployee || null);
+    } else if (user?.role === 'admin') {
+      // Admins should be redirected, but as a fallback, show a message.
+      setEmployee(null);
     }
   }, [user, employees]);
 
@@ -49,7 +49,11 @@ export default function MyProfilePage() {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-headline font-bold tracking-tight">My Profile</h1>
-            <p>Loading employee data...</p>
+            <Card>
+                <CardContent className="pt-6">
+                    <p>{user?.role === 'admin' ? "Admins do not have a profile page. Please navigate using the sidebar." : "Loading employee data..."}</p>
+                </CardContent>
+            </Card>
         </div>
     );
   }
@@ -123,7 +127,7 @@ export default function MyProfilePage() {
                     <CardTitle>Service History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {employee.transferHistory.length > 0 ? (
+                  {employee.transferHistory && employee.transferHistory.length > 0 ? (
                     <ul className="space-y-3">
                       {employee.transferHistory.map((t, i) => (
                         <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
@@ -142,5 +146,3 @@ export default function MyProfilePage() {
     </div>
   );
 }
-
-    
