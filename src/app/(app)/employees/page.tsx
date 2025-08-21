@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2, KeyRound } from "lucide-react";
+import { PlusCircle, Trash2, KeyRound, Search } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/auth-context";
@@ -76,6 +76,8 @@ export default function EmployeesPage() {
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState("All");
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
@@ -160,7 +162,6 @@ export default function EmployeesPage() {
 
     setEmployees(updatedEmployees);
     setEmployeeList(updatedEmployees);
-    setFilteredEmployees(updatedEmployees);
     setIsFormDialogOpen(false);
     setSelectedEmployee(null);
     setPhotoPreview(null);
@@ -182,7 +183,6 @@ export default function EmployeesPage() {
 
     setEmployees(updatedEmployees);
     setEmployeeList(updatedEmployees);
-    setFilteredEmployees(updatedEmployees);
     
     toast({ title: "Success", description: "Password updated successfully." });
     setIsPasswordDialogOpen(false);
@@ -199,7 +199,6 @@ export default function EmployeesPage() {
       const updatedEmployees = employeeList.filter(emp => emp.id !== employeeToDelete);
       setEmployees(updatedEmployees);
       setEmployeeList(updatedEmployees);
-      setFilteredEmployees(updatedEmployees);
       toast({
         title: "Success",
         description: "Employee record deleted.",
@@ -275,24 +274,33 @@ export default function EmployeesPage() {
   }, [obtainedMarks, totalMarks]);
 
   React.useEffect(() => {
-    setFilteredEmployees(employeeList);
-  }, [employeeList]);
+    setEmployeeList(employees);
+  }, [employees]);
   
   React.useEffect(() => {
-    setEmployeeList(employees);
-    setFilteredEmployees(employees);
-  }, [employees]);
+    let filtered = employeeList;
 
-
-  const filterByStation = (station: string) => {
-    if (station === "All") {
-      setFilteredEmployees(employeeList);
-    } else {
-      setFilteredEmployees(
-        employeeList.filter((e) => e.station === station)
-      );
+    // Filter by active tab
+    if (activeTab !== "All") {
+      filtered = filtered.filter((e) => e.station === activeTab);
     }
-  };
+    
+    // Filter by search query
+    if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter((employee) => {
+        return (
+          employee.fullName.toLowerCase().includes(lowercasedQuery) ||
+          employee.designation.toLowerCase().includes(lowercasedQuery) ||
+          employee.station.toLowerCase().includes(lowercasedQuery) ||
+          employee.cnic.toLowerCase().includes(lowercasedQuery) ||
+          employee.bps.toLowerCase().includes(lowercasedQuery)
+        );
+      });
+    }
+
+    setFilteredEmployees(filtered);
+  }, [searchQuery, activeTab, employeeList]);
 
   return (
     <div className="space-y-8">
@@ -492,7 +500,17 @@ export default function EmployeesPage() {
         </Dialog>
       </div>
       
-      <Tabs defaultValue="All" onValueChange={filterByStation} className="w-full">
+       <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, designation, station..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+      <Tabs defaultValue="All" onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 md:w-fit">
           <TabsTrigger value="All">All</TabsTrigger>
           <TabsTrigger value="Head Office">Head Office</TabsTrigger>
@@ -503,13 +521,13 @@ export default function EmployeesPage() {
             <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} />
         </TabsContent>
         <TabsContent value="Head Office">
-          <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Head Office')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+          <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
         <TabsContent value="Zonal Office">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Zonal Office')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
         <TabsContent value="Labour Colony">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Labour Colony')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
       </Tabs>
 
