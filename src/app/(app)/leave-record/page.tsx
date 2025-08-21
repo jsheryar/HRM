@@ -107,21 +107,23 @@ export default function LeaveRecordPage() {
         <p className="text-muted-foreground">Manage your leave requests and balances.</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {leavePolicies.map((policy) => (
-          policy.type !== "Unpaid Leave" && (
-            <Card key={policy.id}>
-                <CardHeader>
-                    <CardTitle>{policy.type}</CardTitle>
-                    <CardDescription>Days remaining</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-4xl font-bold">{policy.balance}</p>
-                </CardContent>
-            </Card>
-          )
-        ))}
-      </div>
+      {!isAdmin && (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {leavePolicies.map((policy) => (
+            policy.type !== "Unpaid Leave" && (
+              <Card key={policy.id}>
+                  <CardHeader>
+                      <CardTitle>{policy.type}</CardTitle>
+                      <CardDescription>Days remaining</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                      <p className="text-4xl font-bold">{policy.balance}</p>
+                  </CardContent>
+              </Card>
+            )
+          ))}
+        </div>
+      )}
 
       <Card>
         <CardHeader>
