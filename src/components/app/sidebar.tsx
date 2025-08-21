@@ -61,11 +61,13 @@ const reportMenuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { logoUrl, user } = useAuth();
-  const menuItems = user?.role ? allMenuItems[user.role] : [];
+  const userRole = user?.role as keyof typeof allMenuItems | undefined;
+  const menuItems = userRole ? allMenuItems[userRole] : [];
+
   const homeHref = user?.role === 'employee' ? "/my-profile" : "/";
   const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
-  const canViewReports = user?.role === 'Admin' || user?.role === 'Sub Admin';
-  const canViewSettings = user?.role === 'Admin';
+  const canViewReports = user?.role === 'Admin' || user?.role === 'Sub Admin' || user?.role === 'admin';
+  const canViewSettings = user?.role === 'Admin' || user?.role === 'admin';
 
 
   return (

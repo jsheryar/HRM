@@ -71,9 +71,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: 'Admin',
         password: 'admin',
     };
-    const currentUsers = getFromLocalStorage('users', [initialAdminUser]);
-     if (currentUsers.length === 0) {
-        currentUsers.push(initialAdminUser);
+    const currentUsers = getFromLocalStorage('users', []);
+     if (currentUsers.length === 0 || !currentUsers.find((u:User) => u.role === 'Admin')) {
+        const adminExists = currentUsers.some((u:User) => u.id === 'admin');
+        if (!adminExists) {
+            currentUsers.push(initialAdminUser);
+        }
     }
     setUsers(currentUsers);
 
@@ -83,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!loading) {
       if (user && pathname === '/login') {
-        const redirectPath = user.role === 'Admin' ? '/' : '/my-profile';
+        const redirectPath = user.role === 'Admin' || user.role === 'admin' ? '/' : '/my-profile';
         router.push(redirectPath);
       }
     }
@@ -124,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check against the users list (for Admin, Sub Admin, etc.)
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
     if(appUser) {
-        foundUser = appUser.role === "Admin" ? {...appUser, role: "Admin"} : appUser;
+        foundUser = appUser
     } else {
       // Check for employee user by CNIC
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
