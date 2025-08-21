@@ -5,21 +5,24 @@ import type { NextRequest } from 'next/server'
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
+
+  // The login page is a public path
   const isPublicPath = path === '/login'
 
-  // This is a placeholder for checking if the user is authenticated
-  // In a real app, you'd check a token in the cookies
-  const isAuthenticated = request.cookies.get('user-token')?.value === 'true'
+  // In a real app, you'd check a secure, httpOnly cookie.
+  // For this prototype, we're checking a cookie that the client-side code sets.
+  const token = request.cookies.get('user')?.value
+  const isAuthenticated = !!token
 
   if (isPublicPath && isAuthenticated) {
+    // If the user is authenticated, redirect them from the login page to the dashboard.
+    // The specific dashboard is handled by the AuthProvider on the client side.
     return NextResponse.redirect(new URL('/', request.nextUrl))
   }
 
   if (!isPublicPath && !isAuthenticated) {
-     // Check if the route is an API, static file, or image optimization route
-    if (path.startsWith('/api') || path.startsWith('/_next') || path.includes('.')) {
-      return NextResponse.next()
-    }
+    // If the user is not authenticated and trying to access a protected page,
+    // redirect them to the login page.
     return NextResponse.redirect(new URL('/login', request.nextUrl))
   }
 

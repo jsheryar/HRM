@@ -30,6 +30,15 @@ const adminUser = {
   password: 'adminpassword'
 };
 
+// A helper function to manage the user cookie
+const setUserCookie = (user: User | null) => {
+    if (user) {
+        document.cookie = `user=${JSON.stringify(user)}; path=/; max-age=86400`; // Expires in 1 day
+    } else {
+        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'; // Delete cookie
+    }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +49,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setUserCookie(parsedUser);
+    } else {
+      setUser(null);
+      setUserCookie(null);
     }
     setLoading(false);
   }, []);
@@ -51,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const redirectPath = user.role === 'admin' ? '/' : '/my-profile';
         router.push(redirectPath);
       } else if (!user && pathname !== '/login') {
+        // This is handled by middleware now, but as a fallback
         router.push('/login');
       }
     }
@@ -80,6 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (foundUser) {
       setUser(foundUser);
       localStorage.setItem('user', JSON.stringify(foundUser));
+      setUserCookie(foundUser); // Set cookie on login
       setLoading(false);
       return true;
     }
@@ -91,6 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    setUserCookie(null); // Remove cookie on logout
     router.push('/login');
   };
 
