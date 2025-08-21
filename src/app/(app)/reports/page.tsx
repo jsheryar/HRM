@@ -77,6 +77,8 @@ export default function ReportsPage() {
     const { toast } = useToast();
     const [selectedFields, setSelectedFields] = React.useState<FieldId[]>(allFields.map(f => f.id));
     const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employees);
+    const [activeFields, setActiveFields] = React.useState<FieldId[]>(allFields.map(f => f.id));
+
 
     // Filters state
     const [dateFilterField, setDateFilterField] = React.useState<"dateOfAppointment" | "dateOfBirth" | "">("");
@@ -122,6 +124,7 @@ export default function ReportsPage() {
             }
         }
         setFilteredEmployees(tempEmployees);
+        setActiveFields(selectedFields);
         toast({ title: "Filters Applied", description: `Report updated to show ${tempEmployees.length} employees.` });
     };
 
@@ -349,23 +352,23 @@ export default function ReportsPage() {
                         {filteredEmployees.map((employee) => (
                           <tr key={employee.id} className="border-b">
                             <td className="p-4 align-top">
-                              <div className="font-medium">{employee.fullName}</div>
-                              <div className="text-xs text-muted-foreground">{employee.designation} ({employee.bps})</div>
-                              <div className="text-xs text-muted-foreground">ID: {employee.cnic}</div>
+                              {activeFields.includes('fullName') && <div className="font-medium">{employee.fullName}</div>}
+                              {activeFields.includes('designation') && activeFields.includes('bps') && <div className="text-xs text-muted-foreground">{employee.designation} ({employee.bps})</div>}
+                              {activeFields.includes('cnic') && <div className="text-xs text-muted-foreground">ID: {employee.cnic}</div>}
                             </td>
                             <td className="p-4 align-top text-xs">
-                                <div><strong>Father:</strong> {employee.fatherName}</div>
-                                <div><strong>DOB:</strong> {employee.dateOfBirth}</div>
-                                <div><strong>Contact:</strong> {employee.mobileNumber}</div>
-                                <div><strong>Email:</strong> {employee.email}</div>
-                                <div><strong>Education:</strong> {employee.education}</div>
+                                {activeFields.includes('fatherName') && <div><strong>Father:</strong> {employee.fatherName}</div>}
+                                {activeFields.includes('dateOfBirth') && <div><strong>DOB:</strong> {employee.dateOfBirth}</div>}
+                                {activeFields.includes('mobileNumber') && <div><strong>Contact:</strong> {employee.mobileNumber}</div>}
+                                {activeFields.includes('email') && <div><strong>Email:</strong> {employee.email}</div>}
+                                {activeFields.includes('education') && <div><strong>Education:</strong> {employee.education}</div>}
                             </td>
                             <td className="p-4 align-top text-xs">
-                                <div><strong>Station:</strong> {employee.station}</div>
-                                <div><strong>Appointed:</strong> {employee.dateOfAppointment}</div>
-                                <div><strong>Type:</strong> {employee.employmentType}</div>
-                                <div><strong>Status:</strong> {employee.status}</div>
-                                <div><strong>History:</strong> {formatTransferHistory(employee.transferHistory)}</div>
+                                {activeFields.includes('station') && <div><strong>Station:</strong> {employee.station}</div>}
+                                {activeFields.includes('dateOfAppointment') && <div><strong>Appointed:</strong> {employee.dateOfAppointment}</div>}
+                                {activeFields.includes('employmentType') && <div><strong>Type:</strong> {employee.employmentType}</div>}
+                                {activeFields.includes('status') && <div><strong>Status:</strong> {employee.status}</div>}
+                                {activeFields.includes('transferHistory') && <div><strong>History:</strong> {formatTransferHistory(employee.transferHistory)}</div>}
                             </td>
                           </tr>
                         ))}
