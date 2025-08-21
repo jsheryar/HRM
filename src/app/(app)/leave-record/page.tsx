@@ -9,10 +9,13 @@ import { Calendar as CalendarIcon, MinusCircle, PlusCircle } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { employees } from "@/lib/data";
+import { Label } from "@/components/ui/label";
 
 export default function LeaveRecordPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
+  const [employeeId, setEmployeeId] = React.useState<string>();
   const { toast } = useToast();
 
   const leaveBalances = {
@@ -23,10 +26,10 @@ export default function LeaveRecordPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !leaveType) {
+    if (!date || !leaveType || !employeeId) {
         toast({
             title: "Incomplete Form",
-            description: "Please select a date and leave type.",
+            description: "Please select an employee, leave type, and date.",
             variant: "destructive"
         });
         return;
@@ -42,9 +45,11 @@ export default function LeaveRecordPage() {
       return;
     }
 
+    const employeeName = employees.find(emp => emp.id === employeeId)?.fullName || "Unknown";
+
     toast({
         title: "Leave Request Submitted",
-        description: `Your request for ${leaveType} on ${format(date, "PPP")} has been submitted for approval.`,
+        description: `Request for ${employeeName} for ${leaveType} on ${format(date, "PPP")} has been submitted for approval.`,
     });
   };
 
@@ -73,13 +78,26 @@ export default function LeaveRecordPage() {
       <Card>
         <CardHeader>
           <CardTitle>New Leave Request</CardTitle>
-          <CardDescription>Submit a new request for time off. It will be sent to your manager for approval.</CardDescription>
+          <CardDescription>Submit a new request for time off. It will be sent to a manager for approval.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
+               <div className="space-y-2">
+                <Label>Employee</Label>
+                <Select onValueChange={setEmployeeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an employee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map(employee => (
+                      <SelectItem key={employee.id} value={employee.id}>{employee.fullName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Leave Type</label>
+                <Label>Leave Type</Label>
                 <Select onValueChange={setLeaveType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a leave type" />
@@ -93,7 +111,7 @@ export default function LeaveRecordPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Date</label>
+                <Label>Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
