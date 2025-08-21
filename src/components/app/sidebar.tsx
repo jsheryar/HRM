@@ -14,7 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -25,6 +25,7 @@ import {
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useAuth } from "@/context/auth-context";
 
 const adminMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -47,6 +48,7 @@ const employeeMenuItems = [
 
 export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const { logoUrl } = useAuth();
   const menuItems = isAdmin ? adminMenuItems : employeeMenuItems;
   const homeHref = isAdmin ? "/" : "/my-profile";
   const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
@@ -56,10 +58,11 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
       <SidebarHeader>
         <div className="flex items-center gap-2" data-testid="logo">
             <Image
-                src="https://placehold.co/120x40.png"
+                src={logoUrl || "https://placehold.co/120x40/FFFFFF/000000?text=ZoneFlow+HR"}
                 alt="Company Logo"
                 width={120}
                 height={40}
+                className="h-10 w-auto"
                 data-ai-hint="logo"
             />
         </div>
@@ -81,6 +84,7 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
             </SidebarMenuItem>
           ))}
            {isAdmin && (
+            <>
              <Collapsible open={isReportsOpen} onOpenChange={setIsReportsOpen}>
                 <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
@@ -111,6 +115,19 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                     </SidebarMenuSub>
                 </CollapsibleContent>
              </Collapsible>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith("/settings")}
+                tooltip={"Settings"}
+              >
+                <Link href="/settings">
+                  <Settings />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            </>
            )}
         </SidebarMenu>
       </SidebarContent>

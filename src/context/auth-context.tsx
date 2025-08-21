@@ -23,6 +23,8 @@ type AuthContextType = {
   setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
   leavePolicies: LeavePolicy[];
   setLeavePolicies: React.Dispatch<React.SetStateAction<LeavePolicy[]>>;
+  logoUrl: string | null;
+  setLogoUrl: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
+  const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -101,6 +104,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveToLocalStorage('leavePolicies', leavePolicies);
   }, [leavePolicies]);
+
+  useEffect(() => {
+    saveToLocalStorage('logoUrl', logoUrl);
+  }, [logoUrl]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
@@ -152,7 +159,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     leaveRequests, 
     setLeaveRequests,
     leavePolicies,
-    setLeavePolicies
+    setLeavePolicies,
+    logoUrl,
+    setLogoUrl
   };
 
   return (
