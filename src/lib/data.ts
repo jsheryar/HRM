@@ -26,6 +26,11 @@ export type Employee = {
   status: 'Active' | 'Inactive';
 };
 
+export type LeaveStatusChange = {
+  status: 'Pending' | 'Approved' | 'Rejected';
+  timestamp: string; // ISO string
+};
+
 export type LeaveRequest = {
   id: string;
   employeeId: string;
@@ -33,6 +38,7 @@ export type LeaveRequest = {
   fromDate: string;
   toDate: string;
   status: 'Pending' | 'Approved' | 'Rejected';
+  statusHistory: LeaveStatusChange[];
 };
 
 export type LeavePolicy = {
@@ -348,10 +354,10 @@ export const employees: Employee[] = [
 
 
 export const leaveRequests: LeaveRequest[] = [
-    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', fromDate: '2024-07-29', toDate: '2024-07-30', status: 'Pending' },
-    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', fromDate: '2024-07-28', toDate: '2024-07-28', status: 'Pending' },
-    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', fromDate: '2024-08-01', toDate: '2024-08-02', status: 'Approved' },
-    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', fromDate: '2024-08-05', toDate: '2024-08-07', status: 'Rejected' },
+    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', fromDate: '2024-07-29', toDate: '2024-07-30', status: 'Pending', statusHistory: [{ status: 'Pending', timestamp: new Date().toISOString() }] },
+    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', fromDate: '2024-07-28', toDate: '2024-07-28', status: 'Pending', statusHistory: [{ status: 'Pending', timestamp: new Date().toISOString() }] },
+    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', fromDate: '2024-08-01', toDate: '2024-08-02', status: 'Approved', statusHistory: [{ status: 'Pending', timestamp: new Date().toISOString() }, { status: 'Approved', timestamp: new Date().toISOString() }] },
+    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', fromDate: '2024-08-05', toDate: '2024-08-07', status: 'Rejected', statusHistory: [{ status: 'Pending', timestamp: new Date().toISOString() }, { status: 'Rejected', timestamp: new Date().toISOString() }] },
 ];
 
 
@@ -361,3 +367,5 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
+
+    

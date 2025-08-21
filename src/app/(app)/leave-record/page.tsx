@@ -1,7 +1,7 @@
 
 "use client"
 import * as React from "react";
-import { addDays, format, parseISO, isValid } from "date-fns";
+import { addDays, format, parseISO, isValid, formatRelative } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, CheckCircle, XCircle } from "lucide-react";
+import { Calendar as CalendarIcon, CheckCircle, XCircle, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 
 export default function LeaveRecordPage() {
   const { user, employees, leaveRequests, setLeaveRequests, leavePolicies } = useAuth();
@@ -24,7 +25,6 @@ export default function LeaveRecordPage() {
     to: addDays(new Date(), 1),
   });
   const [leaveType, setLeaveType] = React.useState<string>();
-  // Default to the logged-in user if they are an employee, otherwise undefined for admin
   const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'employee' ? user.id : undefined);
   const { toast } = useToast();
 
@@ -36,9 +36,17 @@ export default function LeaveRecordPage() {
 
   const handleRequestStatusChange = (requestId: string, newStatus: 'Approved' | 'Rejected') => {
     setLeaveRequests(currentRequests =>
-      currentRequests.map(req =>
-        req.id === requestId ? { ...req, status: newStatus } : req
-      )
+      currentRequests.map(req => {
+        if (req.id === requestId) {
+          const newHistoryEntry = { status: newStatus, timestamp: new Date().toISOString() };
+          return { 
+            ...req, 
+            status: newStatus,
+            statusHistory: [...(req.statusHistory || []), newHistoryEntry] 
+          };
+        }
+        return req;
+      })
     );
     const employeeName = getEmployeeName(leaveRequests.find(r => r.id === requestId)!.employeeId);
     toast({
@@ -75,6 +83,7 @@ export default function LeaveRecordPage() {
         fromDate: format(dateRange.from, "yyyy-MM-dd"),
         toDate: format(dateRange.to, "yyyy-MM-dd"),
         status: 'Pending',
+        statusHistory: [{ status: 'Pending', timestamp: new Date().toISOString() }]
     };
 
     setLeaveRequests(currentRequests => [...currentRequests, newRequest]);
@@ -98,7 +107,6 @@ export default function LeaveRecordPage() {
     ? leaveRequests
     : leaveRequests.filter(req => req.employeeId === user?.id);
 
-  // Effect to set employeeId if the logged-in user is an employee
   React.useEffect(() => {
     if (user?.role === 'employee') {
         setEmployeeId(user.id);
@@ -113,6 +121,11 @@ export default function LeaveRecordPage() {
       return `${format(fromDate, "PPP")} to ${format(toDate, "PPP")}`;
     }
     return "Invalid Dates";
+  }
+  
+  const formatHistoryTimestamp = (timestamp: string) => {
+      if(!timestamp || !isValid(parseISO(timestamp))) return "Invalid Date";
+      return format(parseISO(timestamp), "dd MMM, yyyy 'at' hh:mm a");
   }
 
   return (
@@ -235,7 +248,7 @@ export default function LeaveRecordPage() {
                             <TableHead>Leave Type</TableHead>
                             <TableHead>Dates</TableHead>
                             <TableHead>Status</TableHead>
-                            {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -252,32 +265,86 @@ export default function LeaveRecordPage() {
                                         {request.status}
                                     </Badge>
                                 </TableCell>
-                                {isAdmin && <TableCell className="text-right">
-                                    {request.status === 'Pending' && (
+                                <TableCell className="text-right">
+                                    {isAdmin && (
                                         <>
-                                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
-                                                <CheckCircle className="h-4 w-4" />
-                                                <span className="sr-only">Approve</span>
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
-                                                <XCircle className="h-4 w-4" />
-                                                <span className="sr-only">Reject</span>
-                                            </Button>
+                                            {request.status === 'Pending' && (
+                                                <>
+                                                    <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
+                                                        <CheckCircle className="h-4 w-4" />
+                                                        <span className="sr-only">Approve</span>
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
+                                                        <XCircle className="h-4 w-4" />
+                                                        <span className="sr-only">Reject</span>
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {request.status === 'Approved' && (
+                                                <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
+                                                    <XCircle className="h-4 w-4" />
+                                                    <span className="sr-only">Reject</span>
+                                                </Button>
+                                            )}
+                                            {request.status === 'Rejected' && (
+                                                <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
+                                                    <CheckCircle className="h-4 w-4" />
+                                                    <span className="sr-only">Approve</span>
+                                                </Button>
+                                            )}
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" title="View History">
+                                                        <History className="h-4 w-4" />
+                                                        <span className="sr-only">View History</span>
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Status History</DialogTitle>
+                                                        <DialogDescription>
+                                                            Log of status changes for leave request by {getEmployeeName(request.employeeId)}.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4 py-4">
+                                                        {request.statusHistory?.map((history, index) => (
+                                                            <div key={index} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                                                                <Badge variant={history.status === 'Pending' ? 'secondary' : history.status === 'Approved' ? 'default' : 'destructive'} className={history.status === 'Approved' ? 'bg-green-500' : ''}>{history.status}</Badge>
+                                                                <span className="text-sm text-muted-foreground">{formatHistoryTimestamp(history.timestamp)}</span>
+                                                            </div>
+                                                        )).reverse()}
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
                                         </>
                                     )}
-                                     {request.status === 'Approved' && (
-                                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
-                                            <XCircle className="h-4 w-4" />
-                                            <span className="sr-only">Reject</span>
-                                        </Button>
+                                    {!isAdmin && (
+                                       <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" title="View History">
+                                                    <History className="h-4 w-4" />
+                                                    <span className="sr-only">View History</span>
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Status History</DialogTitle>
+                                                    <DialogDescription>
+                                                        Log of status changes for your leave request.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    {request.statusHistory?.map((history, index) => (
+                                                        <div key={index} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                                                            <Badge variant={history.status === 'Pending' ? 'secondary' : history.status === 'Approved' ? 'default' : 'destructive'} className={history.status === 'Approved' ? 'bg-green-500' : ''}>{history.status}</Badge>
+                                                            <span className="text-sm text-muted-foreground">{formatHistoryTimestamp(history.timestamp)}</span>
+                                                        </div>
+                                                    )).reverse()}
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
                                     )}
-                                    {request.status === 'Rejected' && (
-                                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
-                                            <CheckCircle className="h-4 w-4" />
-                                            <span className="sr-only">Approve</span>
-                                        </Button>
-                                    )}
-                                </TableCell>}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -288,3 +355,5 @@ export default function LeaveRecordPage() {
     </div>
   );
 }
+
+    
