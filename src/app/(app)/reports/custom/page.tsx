@@ -23,6 +23,26 @@ const formatTransferHistory = (history: Transfer[]): string => {
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
 
+const allFields = [
+    { id: 'fullName', label: 'Full Name', group: 'employee' },
+    { id: 'designation', label: 'Designation', group: 'employee' },
+    { id: 'bps', label: 'BPS', group: 'employee' },
+    { id: 'cnic', label: 'CNIC', group: 'employee' },
+    { id: 'fatherName', label: "Father's Name", group: 'personal' },
+    { id: 'dateOfBirth', label: 'Date of Birth', group: 'personal' },
+    { id: 'mobileNumber', label: 'Mobile Number', group: 'personal' },
+    { id: 'email', label: 'Email', group: 'personal' },
+    { id: 'education', label: 'Education', group: 'personal' },
+    { id: 'station', label: 'Station', group: 'employment' },
+    { id: 'department', label: 'Department', group: 'employment' },
+    { id: 'dateOfAppointment', label: 'Date of Appointment', group: 'employment' },
+    { id: 'employmentType', label: 'Employment Type', group: 'employment' },
+    { id: 'status', label: 'Status', group: 'employment' },
+    { id: 'transferHistory', label: 'Service History', group: 'employment' },
+] as const;
+
+type FieldId = typeof allFields[number]['id'];
+
 const formatEmployeeDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     const details = [];
     if (fields.includes('fullName')) details.push(`Name: ${emp.fullName}`);
@@ -46,33 +66,13 @@ const formatPersonalDetailsForExport = (emp: Employee, fields: FieldId[]) => {
 const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     const details = [];
     if (fields.includes('station')) details.push(`Station: ${emp.station}`);
+    if (fields.includes('department')) details.push(`Department: ${emp.department}`);
     if (fields.includes('dateOfAppointment')) details.push(`Appointed: ${emp.dateOfAppointment}`);
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
     return details.join('\n');
 }
-
-
-const allFields = [
-    { id: 'fullName', label: 'Full Name' },
-    { id: 'fatherName', label: "Father's Name" },
-    { id: 'cnic', label: 'CNIC' },
-    { id: 'mobileNumber', label: 'Mobile Number' },
-    { id: 'email', label: 'Email' },
-    { id: 'department', label: 'Department' },
-    { id: 'designation', label: 'Designation' },
-    { id: 'bps', label: 'BPS' },
-    { id: 'education', label: 'Education' },
-    { id: 'station', label: 'Station' },
-    { id: 'employmentType', label: 'Employment Type' },
-    { id: 'dateOfAppointment', label: 'Date of Appointment' },
-    { id: 'dateOfBirth', label: 'Date of Birth' },
-    { id: 'transferHistory', label: 'Service History' },
-    { id: 'status', label: 'Status' },
-] as const;
-
-type FieldId = typeof allFields[number]['id'];
 
 export default function CustomReportsPage() {
     const { employees, user } = useAuth();
@@ -117,6 +117,7 @@ export default function CustomReportsPage() {
                 const from = parseISO(dateFrom);
                 const to = parseISO(dateTo);
                 tempEmployees = tempEmployees.filter(e => {
+                    if (!e[dateFilterField]) return false;
                     const dateToTest = parseISO(e[dateFilterField as keyof Employee] as string);
                     return isWithinInterval(dateToTest, { start: from, end: to });
                 });
@@ -136,22 +137,14 @@ export default function CustomReportsPage() {
             return;
         }
         const XLSX = await import('xlsx');
-        const dataToExport = filteredEmployees.map(emp => {
-            const row: {[key: string]: any} = {};
-            activeFields.forEach(field => {
-                const fieldInfo = allFields.find(f => f.id === field);
-                if (fieldInfo) {
-                    if (field === 'transferHistory') {
-                        row[fieldInfo.label] = formatTransferHistory(emp.transferHistory);
-                    } else {
-                         row[fieldInfo.label] = emp[field as keyof Employee];
-                    }
-                }
-            })
-            return row;
-        });
+        const dataToExport = filteredEmployees.map(emp => ({
+            'Employee': formatEmployeeDetailsForExport(emp, activeFields),
+            'Details': formatPersonalDetailsForExport(emp, activeFields),
+            'Employment': formatEmploymentDetailsForExport(emp, activeFields),
+        }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CustomEmployeeReport');
         XLSX.writeFile(workbook, 'CustomEmployeeReport.xlsx');
@@ -165,23 +158,24 @@ export default function CustomReportsPage() {
         const { default: jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
-        const head = [activeFields.map(field => allFields.find(f => f.id === field)?.label || '')];
-        const body = filteredEmployees.map(emp => {
-            return activeFields.map(field => {
-                if (field === 'transferHistory') {
-                    return formatTransferHistory(emp.transferHistory);
-                }
-                return emp[field as keyof Employee] as string;
-            })
-        });
+        const body = filteredEmployees.map(emp => [
+            formatEmployeeDetailsForExport(emp, activeFields),
+            formatPersonalDetailsForExport(emp, activeFields),
+            formatEmploymentDetailsForExport(emp, activeFields)
+        ]);
 
         doc.text("Custom Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: head,
+            head: [['Employee', 'Details', 'Employment']],
             body: body,
             headStyles: { fillColor: [22, 163, 74] },
-            styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
+            styles: { cellPadding: 2, fontSize: 8, valign: 'top', cellWidth: 'auto' },
+            didParseCell: function (data: any) {
+                if (data.section === 'body') {
+                    data.cell.styles.fontStyle = 'normal';
+                }
+            }
         });
 
         doc.save('CustomEmployeeReport.pdf');
@@ -295,29 +289,29 @@ export default function CustomReportsPage() {
             <div className="print-area">
                 <div className="rounded-lg border">
                     <table className="w-full caption-bottom text-sm">
-                      <caption className="mt-4 text-sm text-muted-foreground">Employee Report</caption>
-                      <thead className="[&_tr]:border-b">
-                        <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                          {activeFields.map(field => {
-                            const fieldInfo = allFields.find(f => f.id === field);
-                            return <th key={field} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{fieldInfo?.label}</th>
-                          })}
-                        </tr>
-                      </thead>
-                      <tbody className="[&_tr:last-child]:border-0">
-                        {filteredEmployees.map((employee) => (
-                          <tr key={employee.id} className="border-b">
-                            {activeFields.map(field => {
-                                const value = employee[field as keyof Employee];
-                                return (
-                                    <td key={field} className="p-4 align-top text-xs whitespace-pre-wrap">
-                                        {field === 'transferHistory' ? formatTransferHistory(employee.transferHistory) : (value as any)?.toString() || ''}
-                                    </td>
-                                )
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
+                        <caption className="mt-4 text-sm text-muted-foreground">Custom Employee Report</caption>
+                        <thead className="[&_tr]:border-b">
+                            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Details</th>
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employment</th>
+                            </tr>
+                        </thead>
+                        <tbody className="[&_tr:last-child]:border-0">
+                            {filteredEmployees.map((employee) => (
+                            <tr key={employee.id} className="border-b">
+                                <td className="p-4 align-top whitespace-pre-wrap">
+                                    {formatEmployeeDetailsForExport(employee, activeFields)}
+                                </td>
+                                <td className="p-4 align-top text-xs whitespace-pre-wrap">
+                                    {formatPersonalDetailsForExport(employee, activeFields)}
+                                </td>
+                                <td className="p-4 align-top text-xs whitespace-pre-wrap">
+                                    {formatEmploymentDetailsForExport(employee, activeFields)}
+                                </td>
+                            </tr>
+                            ))}
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -325,3 +319,5 @@ export default function CustomReportsPage() {
         </div>
     );
 }
+
+    
