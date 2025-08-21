@@ -115,7 +115,7 @@ export default function ReportsPage() {
                 const from = parseISO(dateFrom);
                 const to = parseISO(dateTo);
                 tempEmployees = tempEmployees.filter(e => {
-                    const dateToTest = parseISO(e[dateFilterField]);
+                    const dateToTest = parseISO(e[dateFilterField as keyof Employee] as string);
                     return isWithinInterval(dateToTest, { start: from, end: to });
                 });
             } catch (error) {
@@ -129,19 +129,19 @@ export default function ReportsPage() {
     };
 
     const handleCustomExcelExport = async () => {
-        if (selectedFields.length === 0) {
+        if (activeFields.length === 0) {
             toast({ title: "No fields selected", description: "Please select at least one field to include in the report.", variant: "destructive" });
             return;
         }
         const XLSX = await import('xlsx');
         const dataToExport = filteredEmployees.map(emp => {
             const row: Record<string, any> = {};
-            selectedFields.forEach(field => {
+            activeFields.forEach(field => {
                 const label = allFields.find(f => f.id === field)?.label || field;
                 if (field === 'transferHistory') {
                     row[label] = formatTransferHistory(emp.transferHistory);
                 } else {
-                    row[label] = emp[field];
+                    row[label] = emp[field as keyof Employee];
                 }
             });
             return row;
@@ -154,20 +154,20 @@ export default function ReportsPage() {
     };
 
     const handleCustomPdfExport = async () => {
-        if (selectedFields.length === 0) {
+        if (activeFields.length === 0) {
             toast({ title: "No fields selected", description: "Please select at least one field to include in the report.", variant: "destructive" });
             return;
         }
         const { default: jsPDF } = await import('jspdf');
         const doc = new jsPDF({ orientation: 'landscape' });
         
-        const head = [selectedFields.map(field => allFields.find(f => f.id === field)?.label || field)];
+        const head = [activeFields.map(field => allFields.find(f => f.id === field)?.label || field)];
         const body = filteredEmployees.map(emp => {
-            return selectedFields.map(field => {
+            return activeFields.map(field => {
                 if (field === 'transferHistory') {
                     return formatTransferHistory(emp.transferHistory);
                 }
-                return String(emp[field] || '');
+                return String(emp[field as keyof Employee] || '');
             });
         });
 
@@ -226,12 +226,12 @@ export default function ReportsPage() {
 
     return (
         <div className="space-y-8">
-            <div>
+            <div className="no-print">
                 <h1 className="text-3xl font-headline font-bold tracking-tight">Reports</h1>
                 <p className="text-muted-foreground">Download or print detailed employee records.</p>
             </div>
 
-            <Card>
+            <Card className="no-print">
                 <CardHeader>
                     <CardTitle>Standard Employee Report</CardTitle>
                     <CardDescription>Generate a comprehensive, pre-formatted report of all employee details.</CardDescription>
@@ -243,7 +243,7 @@ export default function ReportsPage() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="no-print">
                 <CardHeader>
                     <CardTitle>Custom Report Generator</CardTitle>
                     <CardDescription>Select the fields and apply filters to create a custom report.</CardDescription>
@@ -330,10 +330,10 @@ export default function ReportsPage() {
 
             <style jsx global>{`
                 @media print {
+                    .no-print { display: none; }
                     body * { visibility: hidden; }
                     .print-area, .print-area * { visibility: visible; }
                     .print-area { position: absolute; left: 0; top: 0; width: 100%; }
-                    .no-print { display: none; }
                 }
             `}</style>
             
@@ -354,7 +354,7 @@ export default function ReportsPage() {
                             <td className="p-4 align-top">
                               {activeFields.includes('fullName') && <div className="font-medium">{employee.fullName}</div>}
                               {activeFields.includes('designation') && activeFields.includes('bps') && <div className="text-xs text-muted-foreground">{employee.designation} ({employee.bps})</div>}
-                              {activeFields.includes('cnic') && <div className="text-xs text-muted-foreground">ID: {employee.cnic}</div>}
+                              {activeFields.includes('cnic') && <div className="text-sm text-muted-foreground">ID: {employee.cnic}</div>}
                             </td>
                             <td className="p-4 align-top text-xs">
                                 {activeFields.includes('fatherName') && <div><strong>Father:</strong> {employee.fatherName}</div>}
