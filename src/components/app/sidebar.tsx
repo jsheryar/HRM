@@ -32,8 +32,6 @@ const adminMenuItems = [
   { href: "/employees", label: "Employees", icon: Users },
   { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
   { href: "/leave-policy", label: "Leave Policy", icon: FileText },
-  { href: "/payroll", label: "Payroll", icon: Banknote },
-  { href: "/documents", label: "Documents", icon: FolderKanban },
 ];
 
 const reportMenuItems = [
