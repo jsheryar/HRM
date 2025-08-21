@@ -255,15 +255,27 @@ export default function LeaveRecordPage() {
                                 {isAdmin && <TableCell className="text-right">
                                     {request.status === 'Pending' && (
                                         <>
-                                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')}>
+                                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
                                                 <CheckCircle className="h-4 w-4" />
                                                 <span className="sr-only">Approve</span>
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')}>
+                                            <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
                                                 <XCircle className="h-4 w-4" />
                                                 <span className="sr-only">Reject</span>
                                             </Button>
                                         </>
+                                    )}
+                                     {request.status === 'Approved' && (
+                                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')} title="Reject">
+                                            <XCircle className="h-4 w-4" />
+                                            <span className="sr-only">Reject</span>
+                                        </Button>
+                                    )}
+                                    {request.status === 'Rejected' && (
+                                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')} title="Approve">
+                                            <CheckCircle className="h-4 w-4" />
+                                            <span className="sr-only">Approve</span>
+                                        </Button>
                                     )}
                                 </TableCell>}
                             </TableRow>
