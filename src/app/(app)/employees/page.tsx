@@ -110,7 +110,6 @@ export default function EmployeesPage() {
       fatherName: formData.get("fatherName") as string,
       cnic: formData.get("cnic") as string,
       mobileNumber: formData.get("mobileNumber") as string,
-      stationOfAppointment: formData.get("stationOfAppointment") as string,
       email: formData.get("email") as string,
       photo: photoPreview || 'https://placehold.co/100x100.png',
       department: formData.get("department") as string,
@@ -118,7 +117,6 @@ export default function EmployeesPage() {
       bps: formData.get("bps") as string,
       education: educationRecord,
       station: formData.get("station") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
-      zone: formData.get("zone") as string,
       employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
@@ -126,7 +124,7 @@ export default function EmployeesPage() {
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.zone || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.stationOfAppointment || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
         toast({
             title: "Error",
             description: "Please fill out all required fields.",
@@ -350,10 +348,6 @@ export default function EmployeesPage() {
                         </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="zone">Zone</Label>
-                      <Input id="zone" name="zone" defaultValue={selectedEmployee?.zone} required />
-                    </div>
-                    <div className="space-y-2">
                         <Label htmlFor="employmentType">Emp. Type</Label>
                         <Select name="employmentType" defaultValue={selectedEmployee?.employmentType} required>
                             <SelectTrigger>
@@ -365,10 +359,6 @@ export default function EmployeesPage() {
                                 <SelectItem value="Daily-wage">Daily-wage</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                     <div className="space-y-2">
-                      <Label htmlFor="stationOfAppointment">Station of Appointment</Label>
-                      <Input id="stationOfAppointment" name="stationOfAppointment" defaultValue={selectedEmployee?.stationOfAppointment} required />
                     </div>
                      <div className="space-y-2">
                       <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
@@ -418,7 +408,7 @@ export default function EmployeesPage() {
                     {transferHistory.map((transfer, index) => (
                       <div key={index} className="grid gap-4 sm:grid-cols-5 items-end">
                         <div className="space-y-2 sm:col-span-1">
-                          <Label htmlFor={`transfer_station_${index}`}>Section/Station</Label>
+                          <Label htmlFor={`transfer_station_${index}`}>Section / Place of Duty</Label>
                            <Select value={transfer.station} onValueChange={(value) => handleTransferChange(index, 'station', value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a station" />
@@ -499,3 +489,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    

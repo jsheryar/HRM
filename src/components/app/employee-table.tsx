@@ -74,7 +74,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{format(new Date(employee.dateOfAppointment), "dd MMM, yyyy")}</div>
-                  <div className="text-sm text-muted-foreground">{employee.stationOfAppointment}</div>
+                  <div className="text-sm text-muted-foreground">{employee.station}</div>
                 </TableCell>
                  <TableCell>
                   {employee.transferHistory.length > 0 ? (
@@ -118,3 +118,5 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
     </div>
   );
 }
+
+    
