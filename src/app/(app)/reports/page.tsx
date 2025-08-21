@@ -346,7 +346,7 @@ export default function ReportsPage() {
                         </tr>
                       </thead>
                       <tbody className="[&_tr:last-child]:border-0">
-                        {employees.map((employee) => (
+                        {filteredEmployees.map((employee) => (
                           <tr key={employee.id} className="border-b">
                             <td className="p-4 align-top">
                               <div className="font-medium">{employee.fullName}</div>
