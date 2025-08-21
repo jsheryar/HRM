@@ -127,7 +127,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check against the users list (for Admin, Sub Admin, etc.)
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
     if(appUser) {
-        foundUser = appUser
+        foundUser = {...appUser};
+        if (foundUser.role.toLowerCase() === 'admin') {
+            foundUser.role = 'Admin';
+        }
     } else {
       // Check for employee user by CNIC
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
