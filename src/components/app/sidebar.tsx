@@ -11,7 +11,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -22,6 +22,7 @@ const adminMenuItems = [
   { href: "/leave-policy", label: "Leave Policy", icon: FileText },
   { href: "/payroll", label: "Payroll", icon: Banknote },
   { href: "/documents", label: "Documents", icon: FolderKanban },
+  { href: "/reports", label: "Reports", icon: FileSpreadsheet },
 ];
 
 const employeeMenuItems = [
