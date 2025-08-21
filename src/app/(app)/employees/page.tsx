@@ -36,6 +36,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const designations = [
     "Software Engineer",
@@ -69,11 +70,13 @@ export default function EmployeesPage() {
   const [totalMarks, setTotalMarks] = React.useState<number | string>("");
   const [percentage, setPercentage] = React.useState<string>("");
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
+  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
   
   const openDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
+    setPhotoPreview(employee?.photo || null);
     if(employee && employee.education) {
         const eduParts = employee.education.split(',').map(p => p.trim());
         const marksPart = eduParts.find(p => p.includes('/'));
@@ -109,7 +112,7 @@ export default function EmployeesPage() {
       mobileNumber: formData.get("mobileNumber") as string,
       stationOfAppointment: formData.get("stationOfAppointment") as string,
       email: formData.get("email") as string,
-      photo: formData.get("photo") as string,
+      photo: photoPreview || 'https://placehold.co/100x100.png',
       department: formData.get("department") as string,
       designation: formData.get("designation") as string,
       bps: formData.get("bps") as string,
@@ -151,6 +154,7 @@ export default function EmployeesPage() {
     setFilteredEmployees(updatedEmployees);
     setIsDialogOpen(false);
     setSelectedEmployee(null);
+    setPhotoPreview(null);
   };
   
   const handleDeleteClick = (employeeId: string) => {
@@ -179,6 +183,17 @@ export default function EmployeesPage() {
       } else {
           setTotalMarks(value);
       }
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   const handleTransferChange = (index: number, field: keyof Transfer, value: string) => {
@@ -263,6 +278,17 @@ export default function EmployeesPage() {
             </DialogHeader>
             <form onSubmit={handleFormSubmit}>
               <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="photo">Employee Photo</Label>
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20">
+                          <AvatarImage src={photoPreview || ''} alt="Employee photo" />
+                          <AvatarFallback>Photo</AvatarFallback>
+                      </Avatar>
+                      <Input id="photo" name="photo" type="file" onChange={handlePhotoChange} accept="image/*" />
+                    </div>
+                </div>
+
                 <div className="grid gap-4 py-4 sm:grid-cols-3">
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Full Name</Label>
@@ -283,10 +309,6 @@ export default function EmployeesPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
-                    </div>
-                     <div className="space-y-2">
-                      <Label htmlFor="photo">Photo URL</Label>
-                      <Input id="photo" name="photo" type="url" defaultValue={selectedEmployee?.photo} placeholder="https://placehold.co/100x100.png" required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>
@@ -477,5 +499,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-
-    
