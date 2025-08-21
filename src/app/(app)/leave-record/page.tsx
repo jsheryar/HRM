@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
 
 export default function LeaveRecordPage() {
-  const { user, employees, leaveRequests, setLeaveRequests } = useAuth();
+  const { user, employees, leaveRequests, setLeaveRequests, leavePolicies } = useAuth();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
   // Default to the logged-in user if they are an employee, otherwise undefined for admin
@@ -26,12 +26,6 @@ export default function LeaveRecordPage() {
 
   const isAdmin = user?.role === 'admin';
 
-  const leaveBalances = {
-    "Annual Leave": 12,
-    "Sick Leave": 8,
-    "Casual Leave": 5,
-  };
-  
   const getEmployeeName = (id: string) => {
     return employees.find(e => e.cnic === id)?.fullName || "Unknown";
   }
@@ -60,7 +54,8 @@ export default function LeaveRecordPage() {
         return;
     }
     
-    if (leaveBalances[leaveType as keyof typeof leaveBalances] <= 0) {
+    const policy = leavePolicies.find(p => p.type === leaveType);
+    if (policy && policy.balance <= 0 && policy.type !== "Unpaid Leave") {
       toast({
           title: "AI Check Failed",
           description: "Cannot request leave. Your balance for this leave type is zero or negative.",
@@ -113,16 +108,18 @@ export default function LeaveRecordPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(leaveBalances).map(([type, days]) => (
-            <Card key={type}>
+        {leavePolicies.map((policy) => (
+          policy.type !== "Unpaid Leave" && (
+            <Card key={policy.id}>
                 <CardHeader>
-                    <CardTitle>{type}</CardTitle>
+                    <CardTitle>{policy.type}</CardTitle>
                     <CardDescription>Days remaining</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-4xl font-bold">{days}</p>
+                    <p className="text-4xl font-bold">{policy.balance}</p>
                 </CardContent>
             </Card>
+          )
         ))}
       </div>
 
@@ -156,10 +153,9 @@ export default function LeaveRecordPage() {
                     <SelectValue placeholder="Select a leave type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Annual Leave">Annual Leave</SelectItem>
-                    <SelectItem value="Sick Leave">Sick Leave</SelectItem>
-                    <SelectItem value="Casual Leave">Casual Leave</SelectItem>
-                    <SelectItem value="Unpaid Leave">Unpaid Leave</SelectItem>
+                    {leavePolicies.map(policy => (
+                        <SelectItem key={policy.id} value={policy.type}>{policy.type}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

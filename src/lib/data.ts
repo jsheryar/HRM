@@ -34,6 +34,12 @@ export type LeaveRequest = {
   status: 'Pending' | 'Approved' | 'Rejected';
 };
 
+export type LeavePolicy = {
+  id: string;
+  type: string;
+  balance: number;
+};
+
 export const employees: Employee[] = [
   {
     id: '12345-1234567-1',
@@ -347,4 +353,10 @@ export const leaveRequests: LeaveRequest[] = [
     { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', date: '2024-08-05', status: 'Rejected' },
 ];
 
-    
+
+export const leavePolicies: LeavePolicy[] = [
+    { id: 'LPOL001', type: 'Annual Leave', balance: 12 },
+    { id: 'LPOL002', type: 'Sick Leave', balance: 8 },
+    { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
+    { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
+];

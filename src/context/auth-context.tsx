@@ -1,6 +1,6 @@
 
 'use client';
-import { employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests } from '@/lib/data';
+import { employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies } from '@/lib/data';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -21,6 +21,8 @@ type AuthContextType = {
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   leaveRequests: LeaveRequest[];
   setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
+  leavePolicies: LeavePolicy[];
+  setLeavePolicies: React.Dispatch<React.SetStateAction<LeavePolicy[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,16 +35,6 @@ const adminUser = {
   photo: 'https://placehold.co/40x40.png',
   password: 'adminpassword'
 };
-
-// A helper function to manage the user cookie
-const setUserCookie = (user: User | null) => {
-    if (typeof window === 'undefined') return;
-    if (user) {
-        document.cookie = `user=${JSON.stringify(user)}; path=/; max-age=86400`; // Expires in 1 day
-    } else {
-        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'; // Delete cookie
-    }
-}
 
 // Helper functions for localStorage to handle server-side rendering
 const getFromLocalStorage = (key: string, defaultValue: any) => {
@@ -71,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => getFromLocalStorage('user', null));
   const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
+  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -78,8 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const storedUser = getFromLocalStorage('user', null);
-    setUser(storedUser);
-    setUserCookie(storedUser);
+    if(storedUser) {
+        setUser(storedUser);
+    }
     setLoading(false);
   }, []);
 
@@ -89,13 +83,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const redirectPath = user.role === 'admin' ? '/' : '/my-profile';
         router.push(redirectPath);
       }
-      // Middleware now handles redirecting unauthenticated users
     }
   }, [user, loading, pathname, router]);
   
   useEffect(() => {
       saveToLocalStorage('user', user);
-      setUserCookie(user);
   }, [user]);
 
   useEffect(() => {
@@ -105,6 +97,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveToLocalStorage('leaveRequests', leaveRequests);
   }, [leaveRequests]);
+
+  useEffect(() => {
+    saveToLocalStorage('leavePolicies', leavePolicies);
+  }, [leavePolicies]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
@@ -142,11 +138,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
+  const value = {
+    user, 
+    loading, 
+    login, 
+    logout, 
+    employees, 
+    setEmployees, 
+    leaveRequests, 
+    setLeaveRequests,
+    leavePolicies,
+    setLeavePolicies
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, employees, setEmployees, leaveRequests, setLeaveRequests }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

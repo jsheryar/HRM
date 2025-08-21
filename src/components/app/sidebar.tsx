@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -10,7 +11,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,6 +19,7 @@ const adminMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employees", label: "Employees", icon: Users },
   { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
+  { href: "/leave-policy", label: "Leave Policy", icon: FileText },
   { href: "/payroll", label: "Payroll", icon: Banknote },
   { href: "/documents", label: "Documents", icon: FolderKanban },
 ];
