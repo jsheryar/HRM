@@ -25,9 +25,11 @@ export default function EmployeeLeaveDetailsPage() {
   );
   
   const calculateLeaveDays = (request: LeaveRequest) => {
+    if (!request.fromDate || !request.toDate) return 0;
     const from = parseISO(request.fromDate);
     const to = parseISO(request.toDate);
     if (isValid(from) && isValid(to)) {
+      // Add 1 to include the start date in the count
       return differenceInDays(to, from) + 1;
     }
     return 0;
