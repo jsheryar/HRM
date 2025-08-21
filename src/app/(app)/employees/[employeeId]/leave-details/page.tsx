@@ -42,10 +42,11 @@ export default function EmployeeLeaveDetailsPage() {
         .reduce((acc, current) => acc + calculateLeaveDays(current), 0);
       return {
         ...policy,
-        balance: policy.balance - taken
+        taken,
+        remaining: policy.balance - taken
       };
     });
-  }, [leavePolicies, employeeLeaveRequests]);
+  }, [leavePolicies, employeeLeaveRequests, calculateLeaveDays]);
 
   const formatDateRange = (from: string, to: string) => {
     if (!from || !to) return "Invalid Dates";
@@ -91,10 +92,17 @@ export default function EmployeeLeaveDetailsPage() {
               <Card key={policy.id}>
                   <CardHeader>
                       <CardTitle>{policy.type}</CardTitle>
-                      <CardDescription>Days remaining</CardDescription>
+                      <CardDescription>Total annual balance: {policy.balance} days</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                      <p className="text-4xl font-bold">{policy.balance}</p>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-baseline">
+                        <span className="text-muted-foreground text-sm">Remaining</span>
+                        <p className="text-2xl font-bold">{policy.remaining}</p>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                        <span className="text-muted-foreground text-sm">Availed</span>
+                        <p className="text-2xl font-bold">{policy.taken}</p>
+                    </div>
                   </CardContent>
               </Card>
             )
