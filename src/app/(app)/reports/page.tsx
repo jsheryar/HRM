@@ -16,29 +16,53 @@ const formatTransferHistory = (history: Transfer[]): string => {
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
 
+const formatEmployeeDetailsForExport = (emp: Employee) => {
+    return [
+        `Name: ${emp.fullName}`,
+        `Designation: ${emp.designation} (${emp.bps})`,
+        `ID: ${emp.cnic}`,
+    ].join('\n');
+}
+
+const formatPersonalDetailsForExport = (emp: Employee) => {
+     return [
+        `Father: ${emp.fatherName}`,
+        `DOB: ${emp.dateOfBirth}`,
+        `Contact: ${emp.mobileNumber}`,
+        `Email: ${emp.email}`,
+        `Education: ${emp.education}`
+    ].join('\n');
+}
+
+const formatEmploymentDetailsForExport = (emp: Employee) => {
+    return [
+        `Station: ${emp.station}`,
+        `Appointed: ${emp.dateOfAppointment}`,
+        `Type: ${emp.employmentType}`,
+        `Status: ${emp.status}`,
+        `History: ${formatTransferHistory(emp.transferHistory)}`
+    ].join('\n');
+}
+
+
 export default function ReportsPage() {
     const { employees, user } = useAuth();
 
     const handleExcelExport = async () => {
         const XLSX = await import('xlsx');
         const worksheet = XLSX.utils.json_to_sheet(employees.map(emp => ({
-            'Employee ID': emp.cnic,
-            'Full Name': emp.fullName,
-            'Father Name': emp.fatherName,
-            'CNIC': emp.cnic,
-            'Mobile Number': emp.mobileNumber,
-            'Email': emp.email,
-            'Department': emp.department,
-            'Designation': emp.designation,
-            'BPS': emp.bps,
-            'Education': emp.education,
-            'Station': emp.station,
-            'Employment Type': emp.employmentType,
-            'Date of Appointment': emp.dateOfAppointment,
-            'Date of Birth': emp.dateOfBirth,
-            'Status': emp.status,
-            'Transfer History': formatTransferHistory(emp.transferHistory)
+            'Employee': formatEmployeeDetailsForExport(emp),
+            'Details': formatPersonalDetailsForExport(emp),
+            'Employment': formatEmploymentDetailsForExport(emp),
         })));
+
+        // Set column widths
+        worksheet['!cols'] = [
+            { wch: 40 }, // Employee
+            { wch: 40 }, // Details
+            { wch: 40 }, // Employment
+        ];
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
         XLSX.writeFile(workbook, 'EmployeeReport.xlsx');
@@ -51,16 +75,19 @@ export default function ReportsPage() {
         doc.text("Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: [['ID', 'Name', 'Designation', 'Station', 'Contact', 'Status']],
+            head: [['Employee', 'Details', 'Employment']],
             body: employees.map(emp => [
-                emp.cnic,
-                emp.fullName,
-                emp.designation,
-                emp.station,
-                emp.mobileNumber,
-                emp.status
+                formatEmployeeDetailsForExport(emp),
+                formatPersonalDetailsForExport(emp),
+                formatEmploymentDetailsForExport(emp)
             ]),
             headStyles: { fillColor: [22, 163, 74] },
+            styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
+            columnStyles: {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto' },
+            }
         });
 
         doc.save('EmployeeReport.pdf');
