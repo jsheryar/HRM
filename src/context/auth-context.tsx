@@ -36,6 +36,7 @@ const adminUser = {
 
 // A helper function to manage the user cookie
 const setUserCookie = (user: User | null) => {
+    if (typeof window === 'undefined') return;
     if (user) {
         document.cookie = `user=${JSON.stringify(user)}; path=/; max-age=86400`; // Expires in 1 day
     } else {
@@ -43,34 +44,42 @@ const setUserCookie = (user: User | null) => {
     }
 }
 
+// Helper functions for localStorage to handle server-side rendering
+const getFromLocalStorage = (key: string, defaultValue: any) => {
+    if (typeof window !== 'undefined') {
+        const storedValue = localStorage.getItem(key);
+        if (storedValue) {
+            try {
+                return JSON.parse(storedValue);
+            } catch (e) {
+                console.error(`Error parsing localStorage key "${key}":`, e);
+                return defaultValue;
+            }
+        }
+    }
+    return defaultValue;
+}
+
+const saveToLocalStorage = (key: string, value: any) => {
+    if (typeof window !== 'undefined') {
+        localStorage.setItem(key, JSON.stringify(value));
+    }
+}
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getFromLocalStorage('user', null));
+  const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
   const [loading, setLoading] = useState(true);
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(initialLeaveRequests);
+  
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    setLoading(true);
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setUserCookie(parsedUser);
-    } else {
-      setUser(null);
-      setUserCookie(null);
-    }
-    const storedEmployees = localStorage.getItem('employees');
-    if (storedEmployees) {
-        setEmployees(JSON.parse(storedEmployees));
-    }
-    const storedLeaveRequests = localStorage.getItem('leaveRequests');
-    if(storedLeaveRequests) {
-        setLeaveRequests(JSON.parse(storedLeaveRequests));
-    }
-
+    const storedUser = getFromLocalStorage('user', null);
+    setUser(storedUser);
+    setUserCookie(storedUser);
     setLoading(false);
   }, []);
 
@@ -79,31 +88,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user && pathname === '/login') {
         const redirectPath = user.role === 'admin' ? '/' : '/my-profile';
         router.push(redirectPath);
-      } else if (!user && pathname !== '/login') {
-        // This is handled by middleware now, but as a fallback
-        router.push('/login');
       }
+      // Middleware now handles redirecting unauthenticated users
     }
   }, [user, loading, pathname, router]);
+  
+  useEffect(() => {
+      saveToLocalStorage('user', user);
+      setUserCookie(user);
+  }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('employees', JSON.stringify(employees));
+    saveToLocalStorage('employees', employees);
   }, [employees]);
 
   useEffect(() => {
-    localStorage.setItem('leaveRequests', JSON.stringify(leaveRequests));
+    saveToLocalStorage('leaveRequests', leaveRequests);
   }, [leaveRequests]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
     let foundUser: User | null = null;
     
+    // Always get the latest employees from localStorage for login check
+    const currentEmployees = getFromLocalStorage('employees', initialEmployees);
+
     // Check for admin user
     if (loginId === adminUser.email && password === adminUser.password) {
       foundUser = adminUser;
     } else {
       // Check for employee user by CNIC
-      const employee = employees.find(emp => emp.cnic === loginId && emp.password === password);
+      const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
           id: employee.cnic, // Use CNIC as the user ID
@@ -117,8 +132,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (foundUser) {
       setUser(foundUser);
-      localStorage.setItem('user', JSON.stringify(foundUser));
-      setUserCookie(foundUser); // Set cookie on login
       setLoading(false);
       return true;
     }
@@ -129,8 +142,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    setUserCookie(null); // Remove cookie on logout
     router.push('/login');
   };
 
@@ -148,5 +159,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
