@@ -1,3 +1,4 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
 import { Users, UserCheck, UserX, MapPin } from 'lucide-react';
@@ -54,5 +55,3 @@ export function DashboardCards() {
     </div>
   );
 }
-
-    
