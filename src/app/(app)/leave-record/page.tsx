@@ -1,6 +1,8 @@
 
 "use client"
 import * as React from "react";
+import { addDays, format, parseISO } from "date-fns";
+import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +12,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,10 @@ import { useAuth } from "@/context/auth-context";
 
 export default function LeaveRecordPage() {
   const { user, employees, leaveRequests, setLeaveRequests, leavePolicies } = useAuth();
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: new Date(),
+    to: addDays(new Date(), 1),
+  });
   const [leaveType, setLeaveType] = React.useState<string>();
   // Default to the logged-in user if they are an employee, otherwise undefined for admin
   const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'employee' ? user.id : undefined);
@@ -45,10 +49,10 @@ export default function LeaveRecordPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !leaveType || !employeeId) {
+    if (!dateRange?.from || !dateRange?.to || !leaveType || !employeeId) {
         toast({
             title: "Incomplete Form",
-            description: "Please select an employee, leave type, and date.",
+            description: "Please select an employee, leave type, and date range.",
             variant: "destructive"
         });
         return;
@@ -68,7 +72,8 @@ export default function LeaveRecordPage() {
         id: `LVE${String(leaveRequests.length + 1).padStart(3, '0')}`,
         employeeId,
         leaveType,
-        date: format(date, "yyyy-MM-dd"),
+        fromDate: format(dateRange.from, "yyyy-MM-dd"),
+        toDate: format(dateRange.to, "yyyy-MM-dd"),
         status: 'Pending',
     };
 
@@ -77,11 +82,11 @@ export default function LeaveRecordPage() {
 
     toast({
         title: "Leave Request Submitted",
-        description: `Request for ${employeeName} for ${leaveType} on ${format(date, "PPP")} has been submitted for approval.`,
+        description: `Request for ${employeeName} for ${leaveType} from ${format(dateRange.from, "PPP")} to ${format(dateRange.to, "PPP")} has been submitted for approval.`,
     });
     
     // Reset form
-    setDate(new Date());
+    setDateRange({ from: new Date(), to: addDays(new Date(), 1) });
     setLeaveType(undefined);
     if(isAdmin) {
         setEmployeeId(undefined);
@@ -162,26 +167,40 @@ export default function LeaveRecordPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Date</Label>
-                <Popover>
+                <Label>Date Range</Label>
+                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
+                      id="date"
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
+                        !dateRange && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "LLL dd, y")} -{" "}
+                            {format(dateRange.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(dateRange.from, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>Pick a date range</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
                       initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
                     />
                   </PopoverContent>
                 </Popover>
@@ -204,7 +223,7 @@ export default function LeaveRecordPage() {
                         <TableRow>
                             {isAdmin && <TableHead>Employee</TableHead>}
                             <TableHead>Leave Type</TableHead>
-                            <TableHead>Date</TableHead>
+                            <TableHead>Dates</TableHead>
                             <TableHead>Status</TableHead>
                             {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                         </TableRow>
@@ -214,7 +233,7 @@ export default function LeaveRecordPage() {
                             <TableRow key={request.id}>
                                 {isAdmin && <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>}
                                 <TableCell>{request.leaveType}</TableCell>
-                                <TableCell>{format(parseISO(request.date), "PPP")}</TableCell>
+                                <TableCell>{`${format(parseISO(request.fromDate), "PPP")} to ${format(parseISO(request.toDate), "PPP")}`}</TableCell>
                                 <TableCell>
                                     <Badge variant={
                                         request.status === 'Pending' ? 'secondary' : 

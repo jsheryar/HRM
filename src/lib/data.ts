@@ -30,7 +30,8 @@ export type LeaveRequest = {
   id: string;
   employeeId: string;
   leaveType: string;
-  date: string;
+  fromDate: string;
+  toDate: string;
   status: 'Pending' | 'Approved' | 'Rejected';
 };
 
@@ -347,10 +348,10 @@ export const employees: Employee[] = [
 
 
 export const leaveRequests: LeaveRequest[] = [
-    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', date: '2024-07-29', status: 'Pending' },
-    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', date: '2024-07-28', status: 'Pending' },
-    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', date: '2024-08-01', status: 'Approved' },
-    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', date: '2024-08-05', status: 'Rejected' },
+    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', fromDate: '2024-07-29', toDate: '2024-07-30', status: 'Pending' },
+    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', fromDate: '2024-07-28', toDate: '2024-07-28', status: 'Pending' },
+    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', fromDate: '2024-08-01', toDate: '2024-08-02', status: 'Approved' },
+    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', fromDate: '2024-08-05', toDate: '2024-08-07', status: 'Rejected' },
 ];
 
 
