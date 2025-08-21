@@ -1,6 +1,6 @@
 
 'use client';
-import { employees } from '@/lib/data';
+import { employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests } from '@/lib/data';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -17,6 +17,10 @@ type AuthContextType = {
   loading: boolean;
   login: (loginId: string, password?: string) => Promise<boolean>;
   logout: () => void;
+  employees: Employee[];
+  setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
+  leaveRequests: LeaveRequest[];
+  setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +46,8 @@ const setUserCookie = (user: User | null) => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(initialLeaveRequests);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -56,6 +62,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setUserCookie(null);
     }
+    const storedEmployees = localStorage.getItem('employees');
+    if (storedEmployees) {
+        setEmployees(JSON.parse(storedEmployees));
+    }
+    const storedLeaveRequests = localStorage.getItem('leaveRequests');
+    if(storedLeaveRequests) {
+        setLeaveRequests(JSON.parse(storedLeaveRequests));
+    }
+
     setLoading(false);
   }, []);
 
@@ -70,6 +85,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   }, [user, loading, pathname, router]);
+
+  useEffect(() => {
+    localStorage.setItem('employees', JSON.stringify(employees));
+  }, [employees]);
+
+  useEffect(() => {
+    localStorage.setItem('leaveRequests', JSON.stringify(leaveRequests));
+  }, [leaveRequests]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
@@ -112,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, employees, setEmployees, leaveRequests, setLeaveRequests }}>
       {children}
     </AuthContext.Provider>
   );
@@ -125,3 +148,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

@@ -12,16 +12,15 @@ import { Calendar as CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { employees, leaveRequests as initialLeaveRequests, LeaveRequest } from "@/lib/data";
+import { LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
 
 export default function LeaveRecordPage() {
-  const { user } = useAuth();
+  const { user, employees, leaveRequests, setLeaveRequests } = useAuth();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
   const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'admin' ? undefined : user?.id);
-  const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>(initialLeaveRequests);
   const { toast } = useToast();
 
   const leaveBalances = {
@@ -239,3 +238,5 @@ export default function LeaveRecordPage() {
     </div>
   );
 }
+
+    

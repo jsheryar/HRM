@@ -1,19 +1,9 @@
+
 "use client";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { employees } from "@/lib/data";
-
-const stationData = employees.reduce((acc, employee) => {
-  const station = employee.station;
-  if (!acc[station]) {
-    acc[station] = { station, count: 0 };
-  }
-  acc[station].count++;
-  return acc;
-}, {} as Record<string, { station: string, count: number }>);
-
-const chartData = Object.values(stationData);
+import { useAuth } from "@/context/auth-context";
 
 const chartConfig = {
   count: {
@@ -23,6 +13,18 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function LocationChart() {
+    const { employees } = useAuth();
+    const stationData = employees.reduce((acc, employee) => {
+      const station = employee.station;
+      if (!acc[station]) {
+        acc[station] = { station, count: 0 };
+      }
+      acc[station].count++;
+      return acc;
+    }, {} as Record<string, { station: string, count: number }>);
+
+    const chartData = Object.values(stationData);
+
     return (
         <Card>
             <CardHeader>
@@ -47,3 +49,5 @@ export function LocationChart() {
         </Card>
     )
 }
+
+    

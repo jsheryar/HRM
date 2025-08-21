@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { employees } from '@/lib/data';
+import { useAuth } from '@/context/auth-context';
 import { Users, UserCheck, UserX, MapPin } from 'lucide-react';
 
 export function DashboardCards() {
+  const { employees } = useAuth();
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter((e) => e.status === 'Active').length;
   const inactiveEmployees = totalEmployees - activeEmployees;
@@ -53,3 +54,5 @@ export function DashboardCards() {
     </div>
   );
 }
+
+    

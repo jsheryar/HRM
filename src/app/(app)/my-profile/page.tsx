@@ -4,7 +4,7 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { employees, Employee } from "@/lib/data";
+import { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 import { useAuth } from "@/context/auth-context";
 
@@ -35,7 +35,7 @@ const formatTenure = (dateString: string | null) => {
 }
 
 export default function MyProfilePage() {
-  const { user } = useAuth();
+  const { user, employees } = useAuth();
   const [employee, setEmployee] = React.useState<Employee | null>(null);
 
   React.useEffect(() => {
@@ -43,7 +43,7 @@ export default function MyProfilePage() {
       const foundEmployee = employees.find(e => e.cnic === user.id);
       setEmployee(foundEmployee || null);
     }
-  }, [user]);
+  }, [user, employees]);
 
   if (!employee) {
     return (
@@ -142,3 +142,5 @@ export default function MyProfilePage() {
     </div>
   );
 }
+
+    

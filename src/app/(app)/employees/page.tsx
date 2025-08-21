@@ -2,7 +2,7 @@
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { employees, Employee, Transfer } from "@/lib/data";
+import { Employee, Transfer } from "@/lib/data";
 import { EmployeeTable } from "@/components/app/employee-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/auth-context";
 
 const designations = [
     "Software Engineer",
@@ -61,6 +62,7 @@ const stationOptions = ["Head Office", "Zonal Office", "Labour Colony"];
 
 
 export default function EmployeesPage() {
+  const { employees, setEmployees } = useAuth();
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -151,6 +153,7 @@ export default function EmployeesPage() {
       });
     }
 
+    setEmployees(updatedEmployees);
     setEmployeeList(updatedEmployees);
     setFilteredEmployees(updatedEmployees);
     setIsDialogOpen(false);
@@ -166,6 +169,7 @@ export default function EmployeesPage() {
   const handleDeleteConfirm = () => {
     if (employeeToDelete) {
       const updatedEmployees = employeeList.filter(emp => emp.id !== employeeToDelete);
+      setEmployees(updatedEmployees);
       setEmployeeList(updatedEmployees);
       setFilteredEmployees(updatedEmployees);
       toast({
@@ -245,6 +249,12 @@ export default function EmployeesPage() {
   React.useEffect(() => {
     setFilteredEmployees(employeeList);
   }, [employeeList]);
+  
+  React.useEffect(() => {
+    setEmployeeList(employees);
+    setFilteredEmployees(employees);
+  }, [employees]);
+
 
   const filterByStation = (station: string) => {
     if (station === "All") {
