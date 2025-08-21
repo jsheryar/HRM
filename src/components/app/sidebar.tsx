@@ -35,7 +35,7 @@ const adminMenuItems = [
 ];
 
 const reportMenuItems = [
-    { href: "/reports/standard", label: "Standard Report" },
+    { href: "/reports", label: "Standard Report" },
     { href: "/reports/custom", label: "Custom Report" },
 ]
 
