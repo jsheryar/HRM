@@ -4,7 +4,7 @@ import * as React from "react";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Printer, Settings2 } from "lucide-react";
+import { Download, FileText, Settings2 } from "lucide-react";
 import { Employee, Transfer } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -74,7 +74,7 @@ const allFields = [
 
 type FieldId = typeof allFields[number]['id'];
 
-export default function ReportsPage() {
+export default function CustomReportsPage() {
     const { employees, user } = useAuth();
     const { toast } = useToast();
     const [selectedFields, setSelectedFields] = React.useState<FieldId[]>(allFields.map(f => f.id));
@@ -136,14 +136,22 @@ export default function ReportsPage() {
             return;
         }
         const XLSX = await import('xlsx');
-        const dataToExport = filteredEmployees.map(emp => ({
-            'Employee': formatEmployeeDetailsForExport(emp, activeFields),
-            'Details': formatPersonalDetailsForExport(emp, activeFields),
-            'Employment': formatEmploymentDetailsForExport(emp, activeFields),
-        }));
+        const dataToExport = filteredEmployees.map(emp => {
+            const row: {[key: string]: any} = {};
+            activeFields.forEach(field => {
+                const fieldInfo = allFields.find(f => f.id === field);
+                if (fieldInfo) {
+                    if (field === 'transferHistory') {
+                        row[fieldInfo.label] = formatTransferHistory(emp.transferHistory);
+                    } else {
+                         row[fieldInfo.label] = emp[field as keyof Employee];
+                    }
+                }
+            })
+            return row;
+        });
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CustomEmployeeReport');
         XLSX.writeFile(workbook, 'CustomEmployeeReport.xlsx');
@@ -157,59 +165,27 @@ export default function ReportsPage() {
         const { default: jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
+        const head = [activeFields.map(field => allFields.find(f => f.id === field)?.label || '')];
+        const body = filteredEmployees.map(emp => {
+            return activeFields.map(field => {
+                if (field === 'transferHistory') {
+                    return formatTransferHistory(emp.transferHistory);
+                }
+                return emp[field as keyof Employee] as string;
+            })
+        });
+
         doc.text("Custom Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: [['Employee', 'Details', 'Employment']],
-            body: filteredEmployees.map(emp => [
-                formatEmployeeDetailsForExport(emp, activeFields),
-                formatPersonalDetailsForExport(emp, activeFields),
-                formatEmploymentDetailsForExport(emp, activeFields)
-            ]),
+            head: head,
+            body: body,
             headStyles: { fillColor: [22, 163, 74] },
             styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' } }
         });
 
         doc.save('CustomEmployeeReport.pdf');
     };
-
-    const handleExcelExport = async () => {
-        const XLSX = await import('xlsx');
-        const worksheet = XLSX.utils.json_to_sheet(employees.map(emp => ({
-            'Employee': formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
-            'Details': formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
-            'Employment': formatEmploymentDetailsForExport(emp, allFields.map(f => f.id)),
-        })));
-
-        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
-        XLSX.writeFile(workbook, 'EmployeeReport.xlsx');
-    };
-
-    const handlePdfExport = async () => {
-        const { default: jsPDF } = await import('jspdf');
-        const doc = new jsPDF();
-        
-        doc.text("Employee Report", 14, 16);
-        (doc as any).autoTable({
-            startY: 22,
-            head: [['Employee', 'Details', 'Employment']],
-            body: employees.map(emp => [
-                formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
-                formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
-                formatEmploymentDetailsForExport(emp, allFields.map(f => f.id))
-            ]),
-            headStyles: { fillColor: [22, 163, 74] },
-            styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' } }
-        });
-
-        doc.save('EmployeeReport.pdf');
-    };
-    
-    const handlePrint = () => { window.print(); };
     
     if (user?.role !== 'admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
@@ -218,21 +194,9 @@ export default function ReportsPage() {
     return (
         <div className="space-y-8">
             <div className="no-print">
-                <h1 className="text-3xl font-headline font-bold tracking-tight">Reports</h1>
-                <p className="text-muted-foreground">Download or print detailed employee records.</p>
+                <h1 className="text-3xl font-headline font-bold tracking-tight">Custom Reports</h1>
+                <p className="text-muted-foreground">Generate and download custom employee reports.</p>
             </div>
-
-            <Card className="no-print">
-                <CardHeader>
-                    <CardTitle>Standard Employee Report</CardTitle>
-                    <CardDescription>Generate a comprehensive, pre-formatted report of all employee details.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row gap-4">
-                    <Button onClick={handleExcelExport}><Download className="mr-2 h-4 w-4" /> Download as Excel</Button>
-                    <Button onClick={handlePdfExport}><FileText className="mr-2 h-4 w-4" /> Download as PDF</Button>
-                    <Button variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print Report</Button>
-                </CardContent>
-            </Card>
 
             <Card className="no-print">
                 <CardHeader>
@@ -334,23 +298,23 @@ export default function ReportsPage() {
                       <caption className="mt-4 text-sm text-muted-foreground">Employee Report</caption>
                       <thead className="[&_tr]:border-b">
                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
-                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Details</th>
-                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employment</th>
+                          {activeFields.map(field => {
+                            const fieldInfo = allFields.find(f => f.id === field);
+                            return <th key={field} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{fieldInfo?.label}</th>
+                          })}
                         </tr>
                       </thead>
                       <tbody className="[&_tr:last-child]:border-0">
                         {filteredEmployees.map((employee) => (
                           <tr key={employee.id} className="border-b">
-                            <td className="p-4 align-top whitespace-pre-wrap">
-                                {formatEmployeeDetailsForExport(employee, activeFields)}
-                            </td>
-                            <td className="p-4 align-top text-xs whitespace-pre-wrap">
-                                {formatPersonalDetailsForExport(employee, activeFields)}
-                            </td>
-                            <td className="p-4 align-top text-xs whitespace-pre-wrap">
-                                {formatEmploymentDetailsForExport(employee, activeFields)}
-                            </td>
+                            {activeFields.map(field => {
+                                const value = employee[field as keyof Employee];
+                                return (
+                                    <td key={field} className="p-4 align-top text-xs whitespace-pre-wrap">
+                                        {field === 'transferHistory' ? formatTransferHistory(employee.transferHistory) : (value as any)?.toString() || ''}
+                                    </td>
+                                )
+                            })}
                           </tr>
                         ))}
                       </tbody>
@@ -361,4 +325,3 @@ export default function ReportsPage() {
         </div>
     );
 }
-

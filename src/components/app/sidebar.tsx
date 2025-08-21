@@ -10,10 +10,20 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 const adminMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -22,8 +32,12 @@ const adminMenuItems = [
   { href: "/leave-policy", label: "Leave Policy", icon: FileText },
   { href: "/payroll", label: "Payroll", icon: Banknote },
   { href: "/documents", label: "Documents", icon: FolderKanban },
-  { href: "/reports", label: "Reports", icon: FileSpreadsheet },
 ];
+
+const reportMenuItems = [
+    { href: "/reports/standard", label: "Standard Report" },
+    { href: "/reports/custom", label: "Custom Report" },
+]
 
 const employeeMenuItems = [
     { href: "/my-profile", label: "My Profile", icon: UserCircle },
@@ -34,6 +48,7 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const menuItems = isAdmin ? adminMenuItems : employeeMenuItems;
   const homeHref = isAdmin ? "/" : "/my-profile";
+  const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
 
   return (
     <Sidebar>
@@ -66,6 +81,38 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+           {isAdmin && (
+             <Collapsible open={isReportsOpen} onOpenChange={setIsReportsOpen}>
+                <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                         <SidebarMenuButton
+                            isActive={pathname.startsWith("/reports")}
+                            tooltip={"Reports"}
+                            className="justify-between"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FileSpreadsheet />
+                                <span>Reports</span>
+                            </div>
+                            <ChevronDown className={cn("transition-transform duration-200", isReportsOpen && "rotate-180")} />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                </SidebarMenuItem>
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {reportMenuItems.map((item) => (
+                            <SidebarMenuSubItem key={item.href}>
+                                <SidebarMenuSubButton asChild isActive={pathname === item.href}>
+                                    <Link href={item.href}>
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+             </Collapsible>
+           )}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="hidden md:flex">
