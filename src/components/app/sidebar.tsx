@@ -14,7 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown, Settings } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown, Settings, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -37,6 +37,7 @@ const adminMenuItems = [
 const reportMenuItems = [
     { href: "/reports/standard", label: "Standard Report" },
     { href: "/reports/custom", label: "Custom Report" },
+    { href: "/reports/retirement", label: "Retirement Report" },
 ]
 
 const employeeMenuItems = [
