@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employees", label: "Employees", icon: Users },
-  { href: "/time-off", label: "Time Off", icon: CalendarClock },
+  { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
   { href: "/payroll", label: "Payroll", icon: Banknote },
   { href: "/documents", label: "Documents", icon: FolderKanban },
 ];
