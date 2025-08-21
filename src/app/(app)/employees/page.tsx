@@ -315,11 +315,12 @@ export default function EmployeesPage() {
     setFilteredEmployees(filtered);
   }, [searchQuery, activeTab, employeeList]);
 
-  const canDelete = user?.role === 'Admin' || user?.role === 'Editor';
-  const canEdit = user?.role === 'Admin' || user?.role === 'Editor'
-  const canManagePassword = user?.role === 'Admin';
-  const canAdd = user?.role === 'Admin' || user?.role === 'Editor' || user?.role === 'Data Entry Operator';
-  const canViewLeaveDetails = user?.role === 'Admin' || user?.role === 'Sub Admin';
+  const userRole = user?.role.toLowerCase();
+  const canDelete = userRole === 'admin' || userRole === 'editor';
+  const canEdit = userRole === 'admin' || userRole === 'editor'
+  const canManagePassword = userRole === 'admin';
+  const canAdd = userRole === 'admin' || userRole === 'editor' || userRole === 'data entry operator';
+  const canViewLeaveDetails = userRole === 'admin' || userRole === 'sub admin';
 
   return (
     <div className="space-y-8">
@@ -593,3 +594,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    

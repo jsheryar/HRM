@@ -143,8 +143,8 @@ export default function SettingsPage() {
         setUserToDelete(null);
     }
 
-
-    if (user?.role !== 'Admin') {
+    const userRole = user?.role?.toLowerCase();
+    if (userRole !== 'admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
     }
 
@@ -311,3 +311,5 @@ export default function SettingsPage() {
         </div>
     );
 }
+
+    

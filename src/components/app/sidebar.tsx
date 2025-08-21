@@ -74,8 +74,9 @@ export function AppSidebar() {
 
   const homeHref = user?.role === 'employee' ? "/my-profile" : "/";
   const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
-  const canViewReports = user?.role === 'Admin' || user?.role === 'Sub Admin' || user?.role === 'admin';
-  const canViewSettings = user?.role === 'Admin' || user?.role === 'admin';
+  const userRole = user?.role?.toLowerCase();
+  const canViewReports = userRole === 'admin' || userRole === 'sub admin';
+  const canViewSettings = userRole === 'admin';
 
 
   return (
@@ -164,3 +165,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
