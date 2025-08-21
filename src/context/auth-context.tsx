@@ -25,11 +25,12 @@ type AuthContextType = {
   setLeavePolicies: React.Dispatch<React.SetStateAction<LeavePolicy[]>>;
   logoUrl: string | null;
   setLogoUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  changePassword: (userId: string, currentPassword?: string, newPassword?: string) => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const adminUser = {
+const initialAdminUser = {
   id: 'admin',
   name: 'Admin User',
   email: 'admin@zoneflow.com',
@@ -67,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
   const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
+  const [adminUser, setAdminUser] = useState(() => getFromLocalStorage('adminUser', initialAdminUser));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -96,6 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveToLocalStorage('employees', employees);
   }, [employees]);
+    
+  useEffect(() => {
+    saveToLocalStorage('adminUser', adminUser);
+  }, [adminUser]);
 
   useEffect(() => {
     saveToLocalStorage('leaveRequests', leaveRequests);
@@ -118,7 +124,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Check for admin user
     if (loginId === adminUser.email && password === adminUser.password) {
-      foundUser = adminUser;
+      foundUser = {
+        id: adminUser.id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+        photo: adminUser.photo
+      };
     } else {
       // Check for employee user by CNIC
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
@@ -149,6 +161,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/login');
   };
 
+  const changePassword = async (userId: string, currentPassword?: string, newPassword?: string): Promise<boolean> => {
+    if(!newPassword) return false;
+
+    if (userId === adminUser.id && currentPassword === adminUser.password) {
+        setAdminUser(prev => ({...prev, password: newPassword}));
+        return true;
+    }
+    // This part can be extended for employees
+    return false;
+  };
+
   const value = {
     user, 
     loading, 
@@ -161,7 +184,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     leavePolicies,
     setLeavePolicies,
     logoUrl,
-    setLogoUrl
+    setLogoUrl,
+    changePassword,
   };
 
   return (
