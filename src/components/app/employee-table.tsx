@@ -13,13 +13,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { Employee } from "@/lib/data";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 interface EmployeeTableProps {
   employees: Employee[];
   onEdit: (employee: Employee) => void;
   onDelete: (employeeId: string) => void;
 }
+
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isValid(date)) {
+    return format(date, "MMM yyyy");
+  }
+  return 'Invalid date';
+}
+
 
 export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
   return (
@@ -30,7 +40,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
             <TableHead>Employee</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
-            <TableHead>Transfer History</TableHead>
+            <TableHead>Service History</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -59,7 +69,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                         {employee.designation} ({employee.bps})
                       </div>
                        <div className="text-sm text-muted-foreground">
-                        DOB: {format(new Date(employee.dateOfBirth), "dd MMM, yyyy")}
+                        DOB: {isValid(new Date(employee.dateOfBirth)) ? format(new Date(employee.dateOfBirth), "dd MMM, yyyy") : 'N/A'}
                       </div>
                        <div className="text-sm text-muted-foreground">
                         Education: {employee.education}
@@ -73,7 +83,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                   <div className="text-sm text-muted-foreground">CNIC: {employee.cnic}</div>
                 </TableCell>
                 <TableCell>
-                  <div className="font-medium">{format(new Date(employee.dateOfAppointment), "dd MMM, yyyy")}</div>
+                  <div className="font-medium">{isValid(new Date(employee.dateOfAppointment)) ? format(new Date(employee.dateOfAppointment), "dd MMM, yyyy") : 'N/A'}</div>
                   <div className="text-sm text-muted-foreground">{employee.station}</div>
                 </TableCell>
                  <TableCell>
@@ -81,7 +91,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                     <ul className="text-sm text-muted-foreground list-disc pl-4">
                       {employee.transferHistory.map((t, i) => (
                         <li key={i}>
-                          {t.station} ({format(new Date(t.fromDate), "MMM yyyy")} - {t.toDate ? format(new Date(t.toDate), "MMM yyyy") : 'Present'})
+                          {t.station} ({formatDate(t.fromDate)} - {t.toDate ? formatDate(t.toDate) : 'Present'})
                         </li>
                       ))}
                     </ul>
@@ -118,5 +128,3 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
     </div>
   );
 }
-
-    
