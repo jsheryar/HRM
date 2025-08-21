@@ -6,9 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { employees, Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
-
-// This would come from auth in a real app
-const LOGGED_IN_EMPLOYEE_ID = 'EMP006'; 
+import { useAuth } from "@/context/auth-context";
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -37,12 +35,15 @@ const formatTenure = (dateString: string | null) => {
 }
 
 export default function MyProfilePage() {
+  const { user } = useAuth();
   const [employee, setEmployee] = React.useState<Employee | null>(null);
 
   React.useEffect(() => {
-    const foundEmployee = employees.find(e => e.id === LOGGED_IN_EMPLOYEE_ID);
-    setEmployee(foundEmployee || null);
-  }, []);
+    if(user?.role === 'employee') {
+      const foundEmployee = employees.find(e => e.id === user.id);
+      setEmployee(foundEmployee || null);
+    }
+  }, [user]);
 
   if (!employee) {
     return (

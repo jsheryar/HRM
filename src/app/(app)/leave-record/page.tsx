@@ -14,15 +14,13 @@ import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { employees, leaveRequests as initialLeaveRequests, LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
-
-// This would come from auth in a real app
-const IS_ADMIN = true; 
-const LOGGED_IN_EMPLOYEE_ID = 'EMP001';
+import { useAuth } from "@/context/auth-context";
 
 export default function LeaveRecordPage() {
+  const { user } = useAuth();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
-  const [employeeId, setEmployeeId] = React.useState<string | undefined>(IS_ADMIN ? undefined : LOGGED_IN_EMPLOYEE_ID);
+  const [employeeId, setEmployeeId] = React.useState<string | undefined>(user?.role === 'admin' ? undefined : user?.id);
   const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>(initialLeaveRequests);
   const { toast } = useToast();
 
@@ -31,7 +29,7 @@ export default function LeaveRecordPage() {
     "Sick Leave": 8,
     "Casual Leave": 5,
   };
-
+  
   const getEmployeeName = (id: string) => {
     return employees.find(e => e.id === id)?.fullName || "Unknown";
   }
@@ -86,9 +84,16 @@ export default function LeaveRecordPage() {
     });
   };
 
-  const displayedLeaveRequests = IS_ADMIN
+  const isAdmin = user?.role === 'admin';
+  const displayedLeaveRequests = isAdmin
     ? leaveRequests
-    : leaveRequests.filter(req => req.employeeId === LOGGED_IN_EMPLOYEE_ID);
+    : leaveRequests.filter(req => req.employeeId === user?.id);
+
+  React.useEffect(() => {
+    if (user?.role === 'employee') {
+        setEmployeeId(user.id);
+    }
+  }, [user]);
 
   return (
     <div className="space-y-8">
@@ -119,10 +124,10 @@ export default function LeaveRecordPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3">
-               {IS_ADMIN && (
+               {isAdmin && (
                 <div className="space-y-2">
                   <Label>Employee</Label>
-                  <Select onValueChange={setEmployeeId}>
+                  <Select onValueChange={setEmployeeId} value={employeeId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select an employee" />
                     </SelectTrigger>
@@ -136,7 +141,7 @@ export default function LeaveRecordPage() {
                )}
               <div className="space-y-2">
                 <Label>Leave Type</Label>
-                <Select onValueChange={setLeaveType}>
+                <Select onValueChange={setLeaveType} value={leaveType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a leave type" />
                   </SelectTrigger>
@@ -181,25 +186,25 @@ export default function LeaveRecordPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>{IS_ADMIN ? "Leave Approval" : "My Leave Requests"}</CardTitle>
-          <CardDescription>{IS_ADMIN ? "Review and approve or reject leave requests." : "A history of your submitted leave requests."}</CardDescription>
+          <CardTitle>{isAdmin ? "Leave Approval" : "My Leave Requests"}</CardTitle>
+          <CardDescription>{isAdmin ? "Review and approve or reject leave requests." : "A history of your submitted leave requests."}</CardDescription>
         </CardHeader>
         <CardContent>
            <div className="rounded-lg border">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            {IS_ADMIN && <TableHead>Employee</TableHead>}
+                            {isAdmin && <TableHead>Employee</TableHead>}
                             <TableHead>Leave Type</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Status</TableHead>
-                            {IS_ADMIN && <TableHead className="text-right">Actions</TableHead>}
+                            {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {displayedLeaveRequests.map((request) => (
                             <TableRow key={request.id}>
-                                {IS_ADMIN && <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>}
+                                {isAdmin && <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>}
                                 <TableCell>{request.leaveType}</TableCell>
                                 <TableCell>{format(parseISO(request.date), "PPP")}</TableCell>
                                 <TableCell>
@@ -210,7 +215,7 @@ export default function LeaveRecordPage() {
                                         {request.status}
                                     </Badge>
                                 </TableCell>
-                                {IS_ADMIN && <TableCell className="text-right">
+                                {isAdmin && <TableCell className="text-right">
                                     {request.status === 'Pending' && (
                                         <>
                                             <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')}>
