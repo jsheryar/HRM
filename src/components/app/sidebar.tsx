@@ -61,8 +61,16 @@ const reportMenuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { logoUrl, user } = useAuth();
-  const userRole = user?.role as keyof typeof allMenuItems | undefined;
-  const menuItems = userRole ? allMenuItems[userRole] : [];
+  
+  const getMenuItems = () => {
+    if (!user?.role) return [];
+    const role = user.role;
+    const keys = Object.keys(allMenuItems) as (keyof typeof allMenuItems)[];
+    const key = keys.find(k => k.toLowerCase() === role.toLowerCase());
+    return key ? allMenuItems[key] : [];
+  }
+
+  const menuItems = getMenuItems();
 
   const homeHref = user?.role === 'employee' ? "/my-profile" : "/";
   const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
