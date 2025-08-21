@@ -9,7 +9,7 @@ export default function AppLayout({
 }) {
   return (
     <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar isAdmin />
         <SidebarInset>
             <div className="flex flex-col h-full">
               <Header />

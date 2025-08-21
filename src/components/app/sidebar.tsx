@@ -10,11 +10,11 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const menuItems = [
+const adminMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employees", label: "Employees", icon: Users },
   { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
@@ -22,8 +22,15 @@ const menuItems = [
   { href: "/documents", label: "Documents", icon: FolderKanban },
 ];
 
-export function AppSidebar() {
+const employeeMenuItems = [
+    { href: "/my-profile", label: "My Profile", icon: UserCircle },
+    { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
+];
+
+export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const menuItems = isAdmin ? adminMenuItems : employeeMenuItems;
+  const homeHref = isAdmin ? "/" : "/my-profile";
 
   return (
     <Sidebar>
@@ -46,7 +53,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={item.href === '/' ? pathname === item.href : pathname.startsWith(item.href)}
+                isActive={pathname === homeHref ? item.href === homeHref : pathname.startsWith(item.href) && item.href !== "/"}
                 tooltip={item.label}
               >
                 <Link href={item.href}>

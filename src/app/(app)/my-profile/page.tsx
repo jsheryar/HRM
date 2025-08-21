@@ -1,0 +1,143 @@
+
+"use client"
+import * as React from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { employees, Employee } from "@/lib/data";
+import { format, isValid, parseISO } from "date-fns";
+
+// This would come from auth in a real app
+const LOGGED_IN_EMPLOYEE_ID = 'EMP006'; 
+
+const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isValid(date)) {
+      return format(date, "dd MMM, yyyy");
+    }
+    return 'Invalid date';
+}
+
+const formatTenure = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isValid(date)) {
+        const today = new Date();
+        const years = today.getFullYear() - date.getFullYear();
+        const months = today.getMonth() - date.getMonth();
+        let tenure = "";
+        if(years > 0) tenure += `${years} years, `;
+        if(months >= 0) tenure += `${months} months`;
+        else tenure += `${12+months} months`
+
+        return tenure;
+    }
+    return 'Invalid date';
+}
+
+export default function MyProfilePage() {
+  const [employee, setEmployee] = React.useState<Employee | null>(null);
+
+  React.useEffect(() => {
+    const foundEmployee = employees.find(e => e.id === LOGGED_IN_EMPLOYEE_ID);
+    setEmployee(foundEmployee || null);
+  }, []);
+
+  if (!employee) {
+    return (
+        <div className="space-y-8">
+            <h1 className="text-3xl font-headline font-bold tracking-tight">My Profile</h1>
+            <p>Loading employee data...</p>
+        </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-headline font-bold tracking-tight">My Profile</h1>
+        <p className="text-muted-foreground">Your personal and employment details.</p>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-1 space-y-8">
+            <Card>
+                <CardContent className="pt-6 flex flex-col items-center text-center">
+                   <Avatar className="h-24 w-24 mb-4">
+                      <AvatarImage src={employee.photo} alt={employee.fullName} data-ai-hint="person avatar" />
+                      <AvatarFallback>
+                        {employee.fullName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h2 className="text-xl font-semibold">{employee.fullName}</h2>
+                    <p className="text-muted-foreground">{employee.designation}</p>
+                    <Badge className="mt-2" variant={employee.status === 'Active' ? 'default' : 'destructive'}>{employee.status}</Badge>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                   <p><span className="font-medium">Email:</span> {employee.email}</p>
+                   <p><span className="font-medium">Mobile:</span> {employee.mobileNumber}</p>
+                   <p><span className="font-medium">CNIC:</span> {employee.cnic}</p>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div className="lg:col-span-2 space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Employment Details</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    <div><span className="font-medium">Employee ID:</span> {employee.id}</div>
+                    <div><span className="font-medium">Department:</span> {employee.department}</div>
+                    <div><span className="font-medium">BPS:</span> {employee.bps}</div>
+                    <div><span className="font-medium">Employment Type:</span> {employee.employmentType}</div>
+                    <div><span className="font-medium">Date of Appointment:</span> {formatDate(employee.dateOfAppointment)}</div>
+                     <div><span className="font-medium">Total Tenure:</span> {formatTenure(employee.dateOfAppointment)}</div>
+                    <div><span className="font-medium">Current Station:</span> {employee.station}</div>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    <div><span className="font-medium">Father's Name:</span> {employee.fatherName}</div>
+                    <div><span className="font-medium">Date of Birth:</span> {formatDate(employee.dateOfBirth)}</div>
+                    <div><span className="font-medium">Education:</span> {employee.education}</div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Service History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {employee.transferHistory.length > 0 ? (
+                    <ul className="space-y-3">
+                      {employee.transferHistory.map((t, i) => (
+                        <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                           <span>{t.station}</span>
+                           <span>{formatDate(t.fromDate)} - {t.toDate ? formatDate(t.toDate) : 'Present'}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No transfer history recorded.</p>
+                  )}
+                </CardContent>
+            </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -15,10 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 import { employees, leaveRequests as initialLeaveRequests, LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 
+// This would come from auth in a real app
+const IS_ADMIN = true; 
+const LOGGED_IN_EMPLOYEE_ID = 'EMP001';
+
 export default function LeaveRecordPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
-  const [employeeId, setEmployeeId] = React.useState<string>();
+  const [employeeId, setEmployeeId] = React.useState<string | undefined>(IS_ADMIN ? undefined : LOGGED_IN_EMPLOYEE_ID);
   const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>(initialLeaveRequests);
   const { toast } = useToast();
 
@@ -50,7 +54,7 @@ export default function LeaveRecordPage() {
     if (!date || !leaveType || !employeeId) {
         toast({
             title: "Incomplete Form",
-            description: "Please select an employee, leave type, and date.",
+            description: "Please select a leave type and date.",
             variant: "destructive"
         });
         return;
@@ -82,6 +86,9 @@ export default function LeaveRecordPage() {
     });
   };
 
+  const displayedLeaveRequests = IS_ADMIN
+    ? leaveRequests
+    : leaveRequests.filter(req => req.employeeId === LOGGED_IN_EMPLOYEE_ID);
 
   return (
     <div className="space-y-8">
@@ -107,24 +114,26 @@ export default function LeaveRecordPage() {
       <Card>
         <CardHeader>
           <CardTitle>New Leave Request</CardTitle>
-          <CardDescription>Submit a new request for time off. It will be sent to a manager for approval.</CardDescription>
+          <CardDescription>Submit a new request for time off. It will be sent for approval.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3">
-               <div className="space-y-2">
-                <Label>Employee</Label>
-                <Select onValueChange={setEmployeeId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an employee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees.map(employee => (
-                      <SelectItem key={employee.id} value={employee.id}>{employee.fullName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               {IS_ADMIN && (
+                <div className="space-y-2">
+                  <Label>Employee</Label>
+                  <Select onValueChange={setEmployeeId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an employee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employees.map(employee => (
+                        <SelectItem key={employee.id} value={employee.id}>{employee.fullName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+               )}
               <div className="space-y-2">
                 <Label>Leave Type</Label>
                 <Select onValueChange={setLeaveType}>
@@ -172,25 +181,25 @@ export default function LeaveRecordPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Leave Approval</CardTitle>
-          <CardDescription>Review and approve or reject leave requests.</CardDescription>
+          <CardTitle>{IS_ADMIN ? "Leave Approval" : "My Leave Requests"}</CardTitle>
+          <CardDescription>{IS_ADMIN ? "Review and approve or reject leave requests." : "A history of your submitted leave requests."}</CardDescription>
         </CardHeader>
         <CardContent>
            <div className="rounded-lg border">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Employee</TableHead>
+                            {IS_ADMIN && <TableHead>Employee</TableHead>}
                             <TableHead>Leave Type</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            {IS_ADMIN && <TableHead className="text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {leaveRequests.map((request) => (
+                        {displayedLeaveRequests.map((request) => (
                             <TableRow key={request.id}>
-                                <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>
+                                {IS_ADMIN && <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>}
                                 <TableCell>{request.leaveType}</TableCell>
                                 <TableCell>{format(parseISO(request.date), "PPP")}</TableCell>
                                 <TableCell>
@@ -201,7 +210,7 @@ export default function LeaveRecordPage() {
                                         {request.status}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-right">
+                                {IS_ADMIN && <TableCell className="text-right">
                                     {request.status === 'Pending' && (
                                         <>
                                             <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')}>
@@ -214,7 +223,7 @@ export default function LeaveRecordPage() {
                                             </Button>
                                         </>
                                     )}
-                                </TableCell>
+                                </TableCell>}
                             </TableRow>
                         ))}
                     </TableBody>
