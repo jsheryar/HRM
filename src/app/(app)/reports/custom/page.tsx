@@ -137,14 +137,15 @@ export default function CustomReportsPage() {
             return;
         }
         const XLSX = await import('xlsx');
-        const dataToExport = filteredEmployees.map(emp => ({
+        const dataToExport = filteredEmployees.map((emp, index) => ({
+            'Sr. No.': index + 1,
             'Employee': formatEmployeeDetailsForExport(emp, activeFields),
             'Details': formatPersonalDetailsForExport(emp, activeFields),
             'Employment': formatEmploymentDetailsForExport(emp, activeFields),
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
+        worksheet['!cols'] = [ { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 40 } ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CustomEmployeeReport');
         XLSX.writeFile(workbook, 'CustomEmployeeReport.xlsx');
@@ -158,7 +159,8 @@ export default function CustomReportsPage() {
         const { default: jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
-        const body = filteredEmployees.map(emp => [
+        const body = filteredEmployees.map((emp, index) => [
+            index + 1,
             formatEmployeeDetailsForExport(emp, activeFields),
             formatPersonalDetailsForExport(emp, activeFields),
             formatEmploymentDetailsForExport(emp, activeFields)
@@ -167,15 +169,11 @@ export default function CustomReportsPage() {
         doc.text("Custom Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: [['Employee', 'Details', 'Employment']],
+            head: [['Sr. No.', 'Employee', 'Details', 'Employment']],
             body: body,
             headStyles: { fillColor: [22, 163, 74] },
-            styles: { cellPadding: 2, fontSize: 8, valign: 'top', cellWidth: 'auto' },
-            didParseCell: function (data: any) {
-                if (data.section === 'body') {
-                    data.cell.styles.fontStyle = 'normal';
-                }
-            }
+            styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 'auto' } }
         });
 
         doc.save('CustomEmployeeReport.pdf');
@@ -292,14 +290,16 @@ export default function CustomReportsPage() {
                         <caption className="mt-4 text-sm text-muted-foreground">Custom Employee Report</caption>
                         <thead className="[&_tr]:border-b">
                             <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Sr. No.</th>
                             <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
                             <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Details</th>
                             <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employment</th>
                             </tr>
                         </thead>
                         <tbody className="[&_tr:last-child]:border-0">
-                            {filteredEmployees.map((employee) => (
+                            {filteredEmployees.map((employee, index) => (
                             <tr key={employee.id} className="border-b">
+                                <td className="p-4 align-top">{index + 1}</td>
                                 <td className="p-4 align-top whitespace-pre-wrap">
                                     {formatEmployeeDetailsForExport(employee, activeFields)}
                                 </td>

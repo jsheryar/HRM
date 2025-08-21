@@ -74,13 +74,14 @@ export default function StandardReportsPage() {
 
     const handleExcelExport = async () => {
         const XLSX = await import('xlsx');
-        const worksheet = XLSX.utils.json_to_sheet(employees.map(emp => ({
+        const worksheet = XLSX.utils.json_to_sheet(employees.map((emp, index) => ({
+            'Sr. No.': index + 1,
             'Employee': formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
             'Details': formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
             'Employment': formatEmploymentDetailsForExport(emp, allFields.map(f => f.id)),
         })));
 
-        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
+        worksheet['!cols'] = [ { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 40 } ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
         XLSX.writeFile(workbook, 'EmployeeReport.xlsx');
@@ -93,15 +94,16 @@ export default function StandardReportsPage() {
         doc.text("Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: [['Employee', 'Details', 'Employment']],
-            body: employees.map(emp => [
+            head: [['Sr. No.', 'Employee', 'Details', 'Employment']],
+            body: employees.map((emp, index) => [
+                index + 1,
                 formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
                 formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
                 formatEmploymentDetailsForExport(emp, allFields.map(f => f.id))
             ]),
             headStyles: { fillColor: [22, 163, 74] },
             styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' } }
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 'auto' } }
         });
 
         doc.save('EmployeeReport.pdf');
@@ -147,14 +149,16 @@ export default function StandardReportsPage() {
                       <caption className="mt-4 text-sm text-muted-foreground">Employee Report</caption>
                       <thead className="[&_tr]:border-b">
                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Sr. No.</th>
                           <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
                           <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Details</th>
                           <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employment</th>
                         </tr>
                       </thead>
                       <tbody className="[&_tr:last-child]:border-0">
-                        {employees.map((employee) => (
+                        {employees.map((employee, index) => (
                           <tr key={employee.id} className="border-b">
+                            <td className="p-4 align-top">{index + 1}</td>
                             <td className="p-4 align-top whitespace-pre-wrap">
                                 {formatEmployeeDetailsForExport(employee, activeFields)}
                             </td>
