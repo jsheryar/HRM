@@ -82,9 +82,9 @@ export default function ReportsPage() {
     const [dateFilterField, setDateFilterField] = React.useState<"dateOfAppointment" | "dateOfBirth" | "">("");
     const [dateFrom, setDateFrom] = React.useState("");
     const [dateTo, setDateTo] = React.useState("");
-    const [stationFilter, setStationFilter] = React.useState("");
-    const [departmentFilter, setDepartmentFilter] = React.useState("");
-    const [employmentTypeFilter, setEmploymentTypeFilter] = React.useState("");
+    const [stationFilter, setStationFilter] = React.useState("all");
+    const [departmentFilter, setDepartmentFilter] = React.useState("all");
+    const [employmentTypeFilter, setEmploymentTypeFilter] = React.useState("all");
     
     const stations = React.useMemo(() => Array.from(new Set(employees.map(e => e.station))), [employees]);
     const departments = React.useMemo(() => Array.from(new Set(employees.map(e => e.department))), [employees]);
@@ -99,13 +99,13 @@ export default function ReportsPage() {
     const applyFilters = () => {
         let tempEmployees = [...employees];
 
-        if (stationFilter) {
+        if (stationFilter && stationFilter !== 'all') {
             tempEmployees = tempEmployees.filter(e => e.station === stationFilter);
         }
-        if (departmentFilter) {
+        if (departmentFilter && departmentFilter !== 'all') {
             tempEmployees = tempEmployees.filter(e => e.department === departmentFilter);
         }
-        if (employmentTypeFilter) {
+        if (employmentTypeFilter && employmentTypeFilter !== 'all') {
             tempEmployees = tempEmployees.filter(e => e.employmentType === employmentTypeFilter);
         }
         if (dateFilterField && dateFrom && dateTo) {
@@ -288,7 +288,7 @@ export default function ReportsPage() {
                                 <Select value={stationFilter} onValueChange={setStationFilter}>
                                     <SelectTrigger><SelectValue placeholder="All Stations" /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Stations</SelectItem>
+                                        <SelectItem value="all">All Stations</SelectItem>
                                         {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -298,7 +298,7 @@ export default function ReportsPage() {
                                 <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                                     <SelectTrigger><SelectValue placeholder="All Departments" /></SelectTrigger>
                                     <SelectContent>
-                                         <SelectItem value="">All Departments</SelectItem>
+                                         <SelectItem value="all">All Departments</SelectItem>
                                         {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -308,7 +308,7 @@ export default function ReportsPage() {
                                 <Select value={employmentTypeFilter} onValueChange={setEmploymentTypeFilter}>
                                     <SelectTrigger><SelectValue placeholder="All Types" /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Types</SelectItem>
+                                        <SelectItem value="all">All Types</SelectItem>
                                         {employmentTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
