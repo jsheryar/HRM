@@ -79,7 +79,8 @@ export default function ExplanationLetterPage() {
         }
     };
 
-    if (user?.role !== 'Admin' && user?.role !== 'Sub Admin') {
+    const userRole = user?.role?.toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'sub admin') {
         return <div className="p-4"><p>You do not have permission to view this page.</p></div>;
     }
 
