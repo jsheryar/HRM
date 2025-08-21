@@ -23,32 +23,34 @@ const formatTransferHistory = (history: Transfer[]): string => {
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
 
-const formatEmployeeDetailsForExport = (emp: Employee) => {
-    return [
-        `Name: ${emp.fullName}`,
-        `Designation: ${emp.designation} (${emp.bps})`,
-        `ID: ${emp.cnic}`,
-    ].join('\n');
+const formatEmployeeDetailsForExport = (emp: Employee, fields: FieldId[]) => {
+    const details = [];
+    if (fields.includes('fullName')) details.push(`Name: ${emp.fullName}`);
+    if (fields.includes('designation') && fields.includes('bps')) details.push(`Designation: ${emp.designation} (${emp.bps})`);
+    else if(fields.includes('designation')) details.push(`Designation: ${emp.designation}`);
+    else if(fields.includes('bps')) details.push(`BPS: ${emp.bps}`);
+    if (fields.includes('cnic')) details.push(`ID: ${emp.cnic}`);
+    return details.join('\n');
 }
 
-const formatPersonalDetailsForExport = (emp: Employee) => {
-     return [
-        `Father: ${emp.fatherName}`,
-        `DOB: ${emp.dateOfBirth}`,
-        `Contact: ${emp.mobileNumber}`,
-        `Email: ${emp.email}`,
-        `Education: ${emp.education}`
-    ].join('\n');
+const formatPersonalDetailsForExport = (emp: Employee, fields: FieldId[]) => {
+     const details = [];
+    if (fields.includes('fatherName')) details.push(`Father: ${emp.fatherName}`);
+    if (fields.includes('dateOfBirth')) details.push(`DOB: ${emp.dateOfBirth}`);
+    if (fields.includes('mobileNumber')) details.push(`Contact: ${emp.mobileNumber}`);
+    if (fields.includes('email')) details.push(`Email: ${emp.email}`);
+    if (fields.includes('education')) details.push(`Education: ${emp.education}`);
+    return details.join('\n');
 }
 
-const formatEmploymentDetailsForExport = (emp: Employee) => {
-    return [
-        `Station: ${emp.station}`,
-        `Appointed: ${emp.dateOfAppointment}`,
-        `Type: ${emp.employmentType}`,
-        `Status: ${emp.status}`,
-        `History: ${formatTransferHistory(emp.transferHistory)}`
-    ].join('\n');
+const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
+    const details = [];
+    if (fields.includes('station')) details.push(`Station: ${emp.station}`);
+    if (fields.includes('dateOfAppointment')) details.push(`Appointed: ${emp.dateOfAppointment}`);
+    if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
+    if (fields.includes('status')) details.push(`Status: ${emp.status}`);
+    if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
+    return details.join('\n');
 }
 
 
@@ -134,20 +136,14 @@ export default function ReportsPage() {
             return;
         }
         const XLSX = await import('xlsx');
-        const dataToExport = filteredEmployees.map(emp => {
-            const row: Record<string, any> = {};
-            activeFields.forEach(field => {
-                const label = allFields.find(f => f.id === field)?.label || field;
-                if (field === 'transferHistory') {
-                    row[label] = formatTransferHistory(emp.transferHistory);
-                } else {
-                    row[label] = emp[field as keyof Employee];
-                }
-            });
-            return row;
-        });
+        const dataToExport = filteredEmployees.map(emp => ({
+            'Employee': formatEmployeeDetailsForExport(emp, activeFields),
+            'Details': formatPersonalDetailsForExport(emp, activeFields),
+            'Employment': formatEmploymentDetailsForExport(emp, activeFields),
+        }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CustomEmployeeReport');
         XLSX.writeFile(workbook, 'CustomEmployeeReport.xlsx');
@@ -159,25 +155,20 @@ export default function ReportsPage() {
             return;
         }
         const { default: jsPDF } = await import('jspdf');
-        const doc = new jsPDF({ orientation: 'landscape' });
+        const doc = new jsPDF();
         
-        const head = [activeFields.map(field => allFields.find(f => f.id === field)?.label || field)];
-        const body = filteredEmployees.map(emp => {
-            return activeFields.map(field => {
-                if (field === 'transferHistory') {
-                    return formatTransferHistory(emp.transferHistory);
-                }
-                return String(emp[field as keyof Employee] || '');
-            });
-        });
-
         doc.text("Custom Employee Report", 14, 16);
         (doc as any).autoTable({
             startY: 22,
-            head: head,
-            body: body,
+            head: [['Employee', 'Details', 'Employment']],
+            body: filteredEmployees.map(emp => [
+                formatEmployeeDetailsForExport(emp, activeFields),
+                formatPersonalDetailsForExport(emp, activeFields),
+                formatEmploymentDetailsForExport(emp, activeFields)
+            ]),
             headStyles: { fillColor: [22, 163, 74] },
             styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' } }
         });
 
         doc.save('CustomEmployeeReport.pdf');
@@ -186,9 +177,9 @@ export default function ReportsPage() {
     const handleExcelExport = async () => {
         const XLSX = await import('xlsx');
         const worksheet = XLSX.utils.json_to_sheet(employees.map(emp => ({
-            'Employee': formatEmployeeDetailsForExport(emp),
-            'Details': formatPersonalDetailsForExport(emp),
-            'Employment': formatEmploymentDetailsForExport(emp),
+            'Employee': formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
+            'Details': formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
+            'Employment': formatEmploymentDetailsForExport(emp, allFields.map(f => f.id)),
         })));
 
         worksheet['!cols'] = [ { wch: 40 }, { wch: 40 }, { wch: 40 } ];
@@ -206,9 +197,9 @@ export default function ReportsPage() {
             startY: 22,
             head: [['Employee', 'Details', 'Employment']],
             body: employees.map(emp => [
-                formatEmployeeDetailsForExport(emp),
-                formatPersonalDetailsForExport(emp),
-                formatEmploymentDetailsForExport(emp)
+                formatEmployeeDetailsForExport(emp, allFields.map(f => f.id)),
+                formatPersonalDetailsForExport(emp, allFields.map(f => f.id)),
+                formatEmploymentDetailsForExport(emp, allFields.map(f => f.id))
             ]),
             headStyles: { fillColor: [22, 163, 74] },
             styles: { cellPadding: 2, fontSize: 8, valign: 'top' },
@@ -351,24 +342,14 @@ export default function ReportsPage() {
                       <tbody className="[&_tr:last-child]:border-0">
                         {filteredEmployees.map((employee) => (
                           <tr key={employee.id} className="border-b">
-                            <td className="p-4 align-top">
-                              {activeFields.includes('fullName') && <div className="font-medium">{employee.fullName}</div>}
-                              {activeFields.includes('designation') && activeFields.includes('bps') && <div className="text-xs text-muted-foreground">{employee.designation} ({employee.bps})</div>}
-                              {activeFields.includes('cnic') && <div className="text-sm text-muted-foreground">ID: {employee.cnic}</div>}
+                            <td className="p-4 align-top whitespace-pre-wrap">
+                                {formatEmployeeDetailsForExport(employee, activeFields)}
                             </td>
-                            <td className="p-4 align-top text-xs">
-                                {activeFields.includes('fatherName') && <div><strong>Father:</strong> {employee.fatherName}</div>}
-                                {activeFields.includes('dateOfBirth') && <div><strong>DOB:</strong> {employee.dateOfBirth}</div>}
-                                {activeFields.includes('mobileNumber') && <div><strong>Contact:</strong> {employee.mobileNumber}</div>}
-                                {activeFields.includes('email') && <div><strong>Email:</strong> {employee.email}</div>}
-                                {activeFields.includes('education') && <div><strong>Education:</strong> {employee.education}</div>}
+                            <td className="p-4 align-top text-xs whitespace-pre-wrap">
+                                {formatPersonalDetailsForExport(employee, activeFields)}
                             </td>
-                            <td className="p-4 align-top text-xs">
-                                {activeFields.includes('station') && <div><strong>Station:</strong> {employee.station}</div>}
-                                {activeFields.includes('dateOfAppointment') && <div><strong>Appointed:</strong> {employee.dateOfAppointment}</div>}
-                                {activeFields.includes('employmentType') && <div><strong>Type:</strong> {employee.employmentType}</div>}
-                                {activeFields.includes('status') && <div><strong>Status:</strong> {employee.status}</div>}
-                                {activeFields.includes('transferHistory') && <div><strong>History:</strong> {formatTransferHistory(employee.transferHistory)}</div>}
+                            <td className="p-4 align-top text-xs whitespace-pre-wrap">
+                                {formatEmploymentDetailsForExport(employee, activeFields)}
                             </td>
                           </tr>
                         ))}
@@ -380,3 +361,4 @@ export default function ReportsPage() {
         </div>
     );
 }
+
