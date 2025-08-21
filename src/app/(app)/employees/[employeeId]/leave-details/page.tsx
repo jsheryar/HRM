@@ -46,7 +46,7 @@ export default function EmployeeLeaveDetailsPage() {
         remaining: policy.balance - taken
       };
     });
-  }, [leavePolicies, employeeLeaveRequests, calculateLeaveDays]);
+  }, [leavePolicies, employeeLeaveRequests]);
 
   const formatDateRange = (from: string, to: string) => {
     if (!from || !to) return "Invalid Dates";
@@ -58,7 +58,7 @@ export default function EmployeeLeaveDetailsPage() {
     return "Invalid Dates";
   };
   
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'Admin' && user?.role !== 'Sub Admin') {
       return (
         <div className="p-4">
             <p>You do not have permission to view this page.</p>

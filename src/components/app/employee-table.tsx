@@ -22,6 +22,12 @@ interface EmployeeTableProps {
   onEdit: (employee: Employee) => void;
   onDelete: (employeeId: string) => void;
   onManagePassword: (employee: Employee) => void;
+  permissions: {
+      canEdit: boolean;
+      canDelete: boolean;
+      canManagePassword: boolean;
+      canViewLeaveDetails: boolean;
+  }
 }
 
 const formatDate = (dateString: string | null) => {
@@ -34,7 +40,7 @@ const formatDate = (dateString: string | null) => {
 }
 
 
-export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword }: EmployeeTableProps) {
+export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, permissions }: EmployeeTableProps) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -108,24 +114,24 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword }:
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(employee)} title="Edit Employee">
+                    {permissions.canEdit && <Button variant="ghost" size="icon" onClick={() => onEdit(employee)} title="Edit Employee">
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
-                    </Button>
-                     <Button variant="ghost" size="icon" onClick={() => onManagePassword(employee)} title="Manage Credentials">
+                    </Button>}
+                     {permissions.canManagePassword && <Button variant="ghost" size="icon" onClick={() => onManagePassword(employee)} title="Manage Credentials">
                         <KeyRound className="h-4 w-4" />
                         <span className="sr-only">Manage Credentials</span>
-                    </Button>
-                     <Button variant="ghost" size="icon" asChild title="Leave Details">
+                    </Button>}
+                     {permissions.canViewLeaveDetails && <Button variant="ghost" size="icon" asChild title="Leave Details">
                         <Link href={`/employees/${employee.id}/leave-details`}>
                             <CalendarDays className="h-4 w-4" />
                             <span className="sr-only">Leave Details</span>
                         </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)} className="text-destructive hover:text-destructive" title="Delete Employee">
+                    </Button>}
+                    {permissions.canDelete && <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)} className="text-destructive hover:text-destructive" title="Delete Employee">
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
-                    </Button>
+                    </Button>}
                 </TableCell>
               </TableRow>
             ))

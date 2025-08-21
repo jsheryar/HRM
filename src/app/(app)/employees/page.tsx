@@ -62,7 +62,7 @@ const stationOptions = ["Head Office", "Zonal Office", "Labour Colony"];
 
 
 export default function EmployeesPage() {
-  const { employees, setEmployees } = useAuth();
+  const { employees, setEmployees, user } = useAuth();
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
   const [isFormDialogOpen, setIsFormDialogOpen] = React.useState(false);
@@ -78,11 +78,24 @@ export default function EmployeesPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState("All");
+
+  // State for controlled select components
+  const [formDesignation, setFormDesignation] = React.useState<string | undefined>();
+  const [formBps, setFormBps] = React.useState<string | undefined>();
+  const [formStation, setFormStation] = React.useState<string | undefined>();
+  const [formEmploymentType, setFormEmploymentType] = React.useState<string | undefined>();
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     setPhotoPreview(employee?.photo || null);
+
+    // Set state for controlled select components
+    setFormDesignation(employee?.designation);
+    setFormBps(employee?.bps);
+    setFormStation(employee?.station);
+    setFormEmploymentType(employee?.employmentType);
+
     if(employee && employee.education) {
         const eduParts = employee.education.split(',').map(p => p.trim());
         const marksPart = eduParts.find(p => p.includes('/'));
@@ -125,11 +138,11 @@ export default function EmployeesPage() {
       email: formData.get("email") as string,
       photo: photoPreview || 'https://placehold.co/100x100.png',
       department: formData.get("department") as string,
-      designation: formData.get("designation") as string,
-      bps: formData.get("bps") as string,
+      designation: formDesignation || '',
+      bps: formBps || '',
       education: educationRecord,
-      station: formData.get("station") as 'Head Office' | 'Zonal Office' | 'Labour Colony',
-      employmentType: formData.get("employmentType") as 'Permanent' | 'Contract' | 'Daily-wage',
+      station: formStation as 'Head Office' | 'Zonal Office' | 'Labour Colony' || 'Head Office',
+      employmentType: formEmploymentType as 'Permanent' | 'Contract' | 'Daily-wage' || 'Permanent',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
       transferHistory: transferHistory,
@@ -302,6 +315,12 @@ export default function EmployeesPage() {
     setFilteredEmployees(filtered);
   }, [searchQuery, activeTab, employeeList]);
 
+  const canDelete = user?.role === 'Admin' || user?.role === 'Editor';
+  const canEdit = user?.role === 'Admin' || user?.role === 'Editor'
+  const canManagePassword = user?.role === 'Admin';
+  const canAdd = user?.role === 'Admin' || user?.role === 'Editor' || user?.role === 'Data Entry Operator';
+  const canViewLeaveDetails = user?.role === 'Admin' || user?.role === 'Sub Admin';
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -311,10 +330,10 @@ export default function EmployeesPage() {
         </div>
         <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => { setIsFormDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
           <DialogTrigger asChild>
-            <Button onClick={() => openFormDialog()}>
+            {canAdd && <Button onClick={() => openFormDialog()}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Employee
-            </Button>
+            </Button>}
           </DialogTrigger>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -363,7 +382,7 @@ export default function EmployeesPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="designation">Designation</Label>
-                        <Select name="designation" defaultValue={selectedEmployee?.designation} required>
+                        <Select name="designation" value={formDesignation} onValueChange={setFormDesignation} required>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a designation" />
                             </SelectTrigger>
@@ -374,7 +393,7 @@ export default function EmployeesPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="bps">BPS</Label>
-                        <Select name="bps" defaultValue={selectedEmployee?.bps} required>
+                        <Select name="bps" value={formBps} onValueChange={setFormBps} required>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select BPS" />
                             </SelectTrigger>
@@ -385,7 +404,7 @@ export default function EmployeesPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="station">Station</Label>
-                        <Select name="station" defaultValue={selectedEmployee?.station} required>
+                        <Select name="station" value={formStation} onValueChange={setFormStation} required>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a station" />
                             </SelectTrigger>
@@ -398,7 +417,7 @@ export default function EmployeesPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="employmentType">Emp. Type</Label>
-                        <Select name="employmentType" defaultValue={selectedEmployee?.employmentType} required>
+                        <Select name="employmentType" value={formEmploymentType} onValueChange={setFormEmploymentType} required>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a type" />
                             </SelectTrigger>
@@ -518,16 +537,16 @@ export default function EmployeesPage() {
           <TabsTrigger value="Labour Colony">Labour Colonies</TabsTrigger>
         </TabsList>
         <TabsContent value="All">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} />
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}} />
         </TabsContent>
         <TabsContent value="Head Office">
-          <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+          <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
         </TabsContent>
         <TabsContent value="Zonal Office">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
         </TabsContent>
         <TabsContent value="Labour Colony">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
         </TabsContent>
       </Tabs>
 

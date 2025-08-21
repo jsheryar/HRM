@@ -36,10 +36,10 @@ export default function MyProfilePage() {
   const [employee, setEmployee] = React.useState<Employee | null>(null);
 
   React.useEffect(() => {
-    if(user?.role === 'employee') {
-      const foundEmployee = employees.find(e => e.cnic === user.id);
+    if(user?.role !== 'Admin') {
+      const foundEmployee = employees.find(e => e.cnic === user?.id);
       setEmployee(foundEmployee || null);
-    } else if (user?.role === 'admin') {
+    } else {
       // Admins should be redirected, but as a fallback, show a message.
       setEmployee(null);
     }
@@ -51,7 +51,7 @@ export default function MyProfilePage() {
             <h1 className="text-3xl font-headline font-bold tracking-tight">My Profile</h1>
             <Card>
                 <CardContent className="pt-6">
-                    <p>{user?.role === 'admin' ? "Admins do not have a profile page. Please navigate using the sidebar." : "Loading employee data..."}</p>
+                    <p>{user?.role === 'Admin' ? "Admins do not have a profile page. Please navigate using the sidebar." : "Loading employee data..."}</p>
                 </CardContent>
             </Card>
         </div>

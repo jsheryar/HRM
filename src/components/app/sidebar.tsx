@@ -14,7 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, Banknote, FolderKanban, UserCircle, FileText, FileSpreadsheet, ChevronDown, Settings, UserCheck } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, FileText, FileSpreadsheet, ChevronDown, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -27,12 +27,30 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useAuth } from "@/context/auth-context";
 
-const adminMenuItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
-  { href: "/leave-policy", label: "Leave Policy", icon: FileText },
-];
+const allMenuItems = {
+    Admin: [
+        { href: "/", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/employees", label: "Employees", icon: Users },
+        { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
+        { href: "/leave-policy", label: "Leave Policy", icon: FileText },
+    ],
+    "Sub Admin": [
+        { href: "/", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/employees", label: "Employees", icon: Users },
+        { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
+        { href: "/leave-policy", label: "Leave Policy", icon: FileText },
+    ],
+    Editor: [
+        { href: "/employees", label: "Employees", icon: Users },
+    ],
+    "Data Entry Operator": [
+        { href: "/employees", label: "Employees", icon: Users },
+    ],
+    employee: [
+        { href: "/my-profile", label: "My Profile", icon: Users },
+        { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
+    ]
+};
 
 const reportMenuItems = [
     { href: "/reports/standard", label: "Standard Report" },
@@ -40,17 +58,15 @@ const reportMenuItems = [
     { href: "/reports/retirement", label: "Retirement Report" },
 ]
 
-const employeeMenuItems = [
-    { href: "/my-profile", label: "My Profile", icon: UserCircle },
-    { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
-];
-
-export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function AppSidebar() {
   const pathname = usePathname();
-  const { logoUrl } = useAuth();
-  const menuItems = isAdmin ? adminMenuItems : employeeMenuItems;
-  const homeHref = isAdmin ? "/" : "/my-profile";
+  const { logoUrl, user } = useAuth();
+  const menuItems = user?.role ? allMenuItems[user.role] : [];
+  const homeHref = user?.role === 'employee' ? "/my-profile" : "/";
   const [isReportsOpen, setIsReportsOpen] = React.useState(pathname.startsWith('/reports'));
+  const canViewReports = user?.role === 'Admin' || user?.role === 'Sub Admin';
+  const canViewSettings = user?.role === 'Admin';
+
 
   return (
     <Sidebar>
@@ -82,7 +98,7 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-           {isAdmin && (
+           {canViewReports && (
             <>
              <Collapsible open={isReportsOpen} onOpenChange={setIsReportsOpen}>
                 <SidebarMenuItem>
@@ -114,6 +130,9 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                     </SidebarMenuSub>
                 </CollapsibleContent>
              </Collapsible>
+            </>
+           )}
+           {canViewSettings && (
              <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
@@ -126,7 +145,6 @@ export function AppSidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            </>
            )}
         </SidebarMenu>
       </SidebarContent>

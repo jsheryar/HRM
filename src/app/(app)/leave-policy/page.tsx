@@ -98,7 +98,7 @@ export default function LeavePolicyPage() {
     setPolicyToDelete(null);
   }
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'Admin' && user?.role !== 'Sub Admin') {
       return (
           <div className="p-4">
               <p>You do not have permission to view this page.</p>

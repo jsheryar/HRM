@@ -1,16 +1,8 @@
 
 'use client';
-import { employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies } from '@/lib/data';
+import { User, employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies } from '@/lib/data';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'employee';
-  photo?: string;
-};
 
 type AuthContextType = {
   user: User | null;
@@ -26,18 +18,11 @@ type AuthContextType = {
   logoUrl: string | null;
   setLogoUrl: React.Dispatch<React.SetStateAction<string | null>>;
   changePassword: (userId: string, currentPassword?: string, newPassword?: string) => Promise<boolean>;
+  users: User[];
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const initialAdminUser = {
-  id: 'admin',
-  name: 'Admin User',
-  email: 'admin@zoneflow.com',
-  role: 'admin' as const,
-  photo: 'https://placehold.co/40x40.png',
-  password: 'adminpassword'
-};
 
 // Helper functions for localStorage to handle server-side rendering
 const getFromLocalStorage = (key: string, defaultValue: any) => {
@@ -64,11 +49,11 @@ const saveToLocalStorage = (key: string, value: any) => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => getFromLocalStorage('user', null));
+  const [users, setUsers] = useState<User[]>(() => getFromLocalStorage('users', []));
   const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
   const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
-  const [adminUser, setAdminUser] = useState(() => getFromLocalStorage('adminUser', initialAdminUser));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -79,13 +64,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if(storedUser) {
         setUser(storedUser);
     }
+    const initialAdminUser: User = {
+        id: 'admin',
+        name: 'Admin User',
+        email: 'admin@zoneflow.com',
+        role: 'Admin',
+        password: 'admin',
+    };
+    const currentUsers = getFromLocalStorage('users', [initialAdminUser]);
+     if (currentUsers.length === 0) {
+        currentUsers.push(initialAdminUser);
+    }
+    setUsers(currentUsers);
+
     setLoading(false);
   }, []);
 
   useEffect(() => {
     if (!loading) {
       if (user && pathname === '/login') {
-        const redirectPath = user.role === 'admin' ? '/' : '/my-profile';
+        const redirectPath = user.role === 'Admin' ? '/' : '/my-profile';
         router.push(redirectPath);
       }
     }
@@ -96,12 +94,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
+    saveToLocalStorage('users', users);
+  }, [users]);
+  
+  useEffect(() => {
     saveToLocalStorage('employees', employees);
   }, [employees]);
-    
-  useEffect(() => {
-    saveToLocalStorage('adminUser', adminUser);
-  }, [adminUser]);
 
   useEffect(() => {
     saveToLocalStorage('leaveRequests', leaveRequests);
@@ -119,18 +117,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     let foundUser: User | null = null;
     
-    // Always get the latest employees from localStorage for login check
+    // Always get the latest data from localStorage for login check
+    const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
-    // Check for admin user
-    if (loginId === adminUser.email && password === adminUser.password) {
-      foundUser = {
-        id: adminUser.id,
-        name: adminUser.name,
-        email: adminUser.email,
-        role: adminUser.role,
-        photo: adminUser.photo
-      };
+    // Check against the users list (for Admin, Sub Admin, etc.)
+    const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
+    if(appUser) {
+        foundUser = appUser.role === "Admin" ? {...appUser, role: "Admin"} : appUser;
     } else {
       // Check for employee user by CNIC
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
@@ -140,7 +134,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           name: employee.fullName,
           email: employee.email,
           role: 'employee',
-          photo: employee.photo
+          photo: employee.photo,
+          password: employee.password
         };
       }
     }
@@ -157,18 +152,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+    }
     router.push('/login');
   };
 
   const changePassword = async (userId: string, currentPassword?: string, newPassword?: string): Promise<boolean> => {
     if(!newPassword) return false;
+    
+    let userFound = false;
+    const updatedUsers = users.map(u => {
+        if(u.id === userId && u.password === currentPassword) {
+            userFound = true;
+            return { ...u, password: newPassword };
+        }
+        return u;
+    });
 
-    if (userId === adminUser.id && currentPassword === adminUser.password) {
-        setAdminUser(prev => ({...prev, password: newPassword}));
+    if(userFound) {
+        setUsers(updatedUsers);
+        // Also update the currently logged in user's state if they are the one changing the password
+        if (user?.id === userId) {
+            setUser(prevUser => prevUser ? {...prevUser, password: newPassword} : null);
+        }
         return true;
     }
-    // This part can be extended for employees
+    
     return false;
   };
 
@@ -186,6 +196,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logoUrl,
     setLogoUrl,
     changePassword,
+    users,
+    setUsers
   };
 
   return (

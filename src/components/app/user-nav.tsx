@@ -54,11 +54,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push(user.role === 'admin' ? '/' : '/my-profile')}>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          {user.role === 'admin' && (
+           <DropdownMenuItem onClick={() => router.push(user.role === 'employee' ? '/my-profile' : '/')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>{user.role === 'employee' ? 'Profile' : 'Dashboard'}</span>
+            </DropdownMenuItem>
+          {user.role === 'Admin' && (
             <DropdownMenuItem onClick={() => router.push('/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>

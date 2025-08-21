@@ -47,6 +47,16 @@ export type LeavePolicy = {
   balance: number;
 };
 
+export type User = {
+    id: string;
+    name: string;
+    email: string;
+    password?: string;
+    photo?: string;
+    role: 'Admin' | 'Sub Admin' | 'Editor' | 'Data Entry Operator' | 'employee';
+}
+
+
 export const employees: Employee[] = [
   {
     id: '12345-1234567-1',
@@ -367,5 +377,3 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
-
-    
