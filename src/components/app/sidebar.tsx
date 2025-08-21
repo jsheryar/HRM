@@ -14,7 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, FileText, FileSpreadsheet, ChevronDown, Settings } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, FileText, FileSpreadsheet, ChevronDown, Settings, BookUser } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -33,12 +33,14 @@ const allMenuItems = {
         { href: "/employees", label: "Employees", icon: Users },
         { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
         { href: "/leave-policy", label: "Leave Policy", icon: FileText },
+        { href: "/explanation-letter", label: "Explanation Letter", icon: BookUser },
     ],
     "Sub Admin": [
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/employees", label: "Employees", icon: Users },
         { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
         { href: "/leave-policy", label: "Leave Policy", icon: FileText },
+        { href: "/explanation-letter", label: "Explanation Letter", icon: BookUser },
     ],
     Editor: [
         { href: "/employees", label: "Employees", icon: Users },
@@ -166,4 +168,3 @@ export function AppSidebar() {
   );
 }
 
-    
