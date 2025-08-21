@@ -10,7 +10,7 @@ import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const router = useRouter();
@@ -20,13 +20,13 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await login(email);
+    const success = await login(loginId, password);
     if (success) {
       router.push('/');
     } else {
       toast({
         title: 'Login Failed',
-        description: 'Invalid email or password. Please try again.',
+        description: 'Invalid credentials. Please try again.',
         variant: 'destructive',
       });
     }
@@ -53,14 +53,13 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="loginId">Login ID (Email or CNIC)</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
+                id="loginId"
+                placeholder="admin@zoneflow.com or 12345-1234567-1"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -71,7 +70,6 @@ export default function LoginPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="For prototype, any password works"
                />
             </div>
           </CardContent>
@@ -85,3 +83,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

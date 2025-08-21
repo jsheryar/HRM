@@ -15,7 +15,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (email: string) => Promise<boolean>;
+  login: (loginId: string, password?: string) => Promise<boolean>;
   logout: () => void;
 };
 
@@ -26,7 +26,8 @@ const adminUser = {
   name: 'Admin User',
   email: 'admin@zoneflow.com',
   role: 'admin' as const,
-  photo: 'https://placehold.co/40x40.png'
+  photo: 'https://placehold.co/40x40.png',
+  password: 'adminpassword' // Added for consistency
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -50,14 +51,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, [router, pathname]);
 
-  const login = async (email: string): Promise<boolean> => {
+  const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
-    // In a real app, you'd verify password too
     let foundUser: User | null = null;
-    if (email === adminUser.email) {
+    
+    // Check for admin user
+    if (loginId === adminUser.email && password === adminUser.password) {
       foundUser = adminUser;
     } else {
-      const employee = employees.find(emp => emp.email === email);
+      // Check for employee user by CNIC
+      const employee = employees.find(emp => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
           id: employee.id,
@@ -100,3 +103,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

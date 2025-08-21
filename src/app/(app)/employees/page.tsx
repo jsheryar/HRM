@@ -1,3 +1,4 @@
+
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -98,6 +99,7 @@ export default function EmployeesPage() {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const cnic = formData.get("cnic") as string;
     
     const institution = formData.get("institution") as string;
     const degree = formData.get("degree") as string;
@@ -105,10 +107,11 @@ export default function EmployeesPage() {
     const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
 
     const employeeData = {
-      id: selectedEmployee?.id || `EMP${String(employeeList.length + 1).padStart(3, '0')}`,
+      id: cnic, // Use CNIC as the employee ID
       fullName: formData.get("fullName") as string,
       fatherName: formData.get("fatherName") as string,
-      cnic: formData.get("cnic") as string,
+      cnic: cnic,
+      password: formData.get("password") as string,
       mobileNumber: formData.get("mobileNumber") as string,
       email: formData.get("email") as string,
       photo: photoPreview || 'https://placehold.co/100x100.png',
@@ -124,10 +127,10 @@ export default function EmployeesPage() {
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps || !employeeData.password) {
         toast({
             title: "Error",
-            description: "Please fill out all required fields.",
+            description: "Please fill out all required fields, including password.",
             variant: "destructive",
         });
         return;
@@ -280,7 +283,7 @@ export default function EmployeesPage() {
                     <Label htmlFor="photo">Employee Photo</Label>
                     <div className="flex items-center gap-4">
                       <Avatar className="h-20 w-20">
-                          <AvatarImage src={photoPreview || ''} alt="Employee photo" />
+                          <AvatarImage src={photoPreview || ''} alt="Employee photo" data-ai-hint="person avatar" />
                           <AvatarFallback>Photo</AvatarFallback>
                       </Avatar>
                       <Input id="photo" name="photo" type="file" onChange={handlePhotoChange} accept="image/*" />
@@ -297,8 +300,8 @@ export default function EmployeesPage() {
                       <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
                     </div>
                      <div className="space-y-2">
-                      <Label htmlFor="cnic">CNIC Number</Label>
-                      <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required />
+                      <Label htmlFor="cnic">CNIC Number (Login ID)</Label>
+                      <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required disabled={!!selectedEmployee}/>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="mobileNumber">Mobile Number</Label>
@@ -307,6 +310,10 @@ export default function EmployeesPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input id="password" name="password" type="password" defaultValue={selectedEmployee?.password} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>

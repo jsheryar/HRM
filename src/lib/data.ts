@@ -10,6 +10,7 @@ export type Employee = {
   fullName: string;
   fatherName: string;
   cnic: string;
+  password?: string;
   mobileNumber: string;
   email: string;
   photo: string;
@@ -35,10 +36,11 @@ export type LeaveRequest = {
 
 export const employees: Employee[] = [
   {
-    id: 'EMP001',
+    id: '12345-1234567-1',
     fullName: 'Aarav Sharma',
     fatherName: 'Suresh Sharma',
     cnic: '12345-1234567-1',
+    password: 'password',
     mobileNumber: '0300-1234567',
     email: 'aarav.sharma@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -54,10 +56,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP002',
+    id: '12345-1234567-2',
     fullName: 'Diya Patel',
     fatherName: 'Ramesh Patel',
     cnic: '12345-1234567-2',
+    password: 'password',
     mobileNumber: '0300-2345678',
     email: 'diya.patel@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -73,10 +76,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP003',
+    id: '12345-1234567-3',
     fullName: 'Rohan Kumar',
     fatherName: 'Anil Kumar',
     cnic: '12345-1234567-3',
+    password: 'password',
     mobileNumber: '0300-3456789',
     email: 'rohan.kumar@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -92,10 +96,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP004',
+    id: '12345-1234567-4',
     fullName: 'Priya Singh',
     fatherName: 'Vikram Singh',
     cnic: '12345-1234567-4',
+    password: 'password',
     mobileNumber: '0300-4567890',
     email: 'priya.singh@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -111,10 +116,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP005',
+    id: '12345-1234567-5',
     fullName: 'Amit Kumar',
     fatherName: 'Sunil Kumar',
     cnic: '12345-1234567-5',
+    password: 'password',
     mobileNumber: '0300-5678901',
     email: 'amit.kumar@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -130,10 +136,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP006',
+    id: '12345-1234567-6',
     fullName: 'Sunita Devi',
     fatherName: 'Rajesh Devi',
     cnic: '12345-1234567-6',
+    password: 'password',
     mobileNumber: '0300-6789012',
     email: 'sunita.devi@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -151,10 +158,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP007',
+    id: '12345-1234567-7',
     fullName: 'Vikram Rathod',
     fatherName: 'Sanjay Rathod',
     cnic: '12345-1234567-7',
+    password: 'password',
     mobileNumber: '0300-7890123',
     email: 'vikram.rathod@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -170,10 +178,11 @@ export const employees: Employee[] = [
     status: 'Inactive',
   },
   {
-    id: 'EMP008',
+    id: '12345-1234567-8',
     fullName: 'Anjali Verma',
     fatherName: 'Ravi Verma',
     cnic: '12345-1234567-8',
+    password: 'password',
     mobileNumber: '0300-8901234',
     email: 'anjali.verma@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -189,10 +198,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP009',
+    id: '12345-1234567-9',
     fullName: 'Manoj Yadav',
     fatherName: 'Dinesh Yadav',
     cnic: '12345-1234567-9',
+    password: 'password',
     mobileNumber: '0300-9012345',
     email: 'manoj.yadav@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -208,10 +218,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP010',
+    id: '23456-2345678-0',
     fullName: 'Sneha Reddy',
     fatherName: 'Arjun Reddy',
     cnic: '23456-2345678-0',
+    password: 'password',
     mobileNumber: '0301-1234567',
     email: 'sneha.reddy@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -227,10 +238,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
     {
-    id: 'EMP011',
+    id: '23456-2345678-1',
     fullName: 'Kavita Gupta',
     fatherName: 'Ashok Gupta',
     cnic: '23456-2345678-1',
+    password: 'password',
     mobileNumber: '0301-2345678',
     email: 'kavita.gupta@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -246,10 +258,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP012',
+    id: '23456-2345678-2',
     fullName: 'Rajesh Mehra',
     fatherName: 'Vijay Mehra',
     cnic: '23456-2345678-2',
+    password: 'password',
     mobileNumber: '0301-3456789',
     email: 'rajesh.mehra@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -265,10 +278,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP013',
+    id: '23456-2345678-3',
     fullName: 'Suresh Ram',
     fatherName: 'Gopal Ram',
     cnic: '23456-2345678-3',
+    password: 'password',
     mobileNumber: '0301-4567890',
     email: 'suresh.ram@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -284,10 +298,11 @@ export const employees: Employee[] = [
     status: 'Inactive',
   },
   {
-    id: 'EMP014',
+    id: '23456-2345678-4',
     fullName: 'Neha Desai',
     fatherName: 'Mahesh Desai',
     cnic: '23456-2345678-4',
+    password: 'password',
     mobileNumber: '0301-5678901',
     email: 'neha.desai@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -303,10 +318,11 @@ export const employees: Employee[] = [
     status: 'Active',
   },
   {
-    id: 'EMP015',
+    id: '23456-2345678-5',
     fullName: 'Arjun Singh',
     fatherName: 'Ranbir Singh',
     cnic: '23456-2345678-5',
+    password: 'password',
     mobileNumber: '0301-6789012',
     email: 'arjun.singh@example.com',
     photo: 'https://placehold.co/100x100.png',
@@ -325,8 +341,10 @@ export const employees: Employee[] = [
 
 
 export const leaveRequests: LeaveRequest[] = [
-    { id: 'LVE001', employeeId: 'EMP001', leaveType: 'Annual Leave', date: '2024-07-29', status: 'Pending' },
-    { id: 'LVE002', employeeId: 'EMP005', leaveType: 'Sick Leave', date: '2024-07-28', status: 'Pending' },
-    { id: 'LVE003', employeeId: 'EMP006', leaveType: 'Casual Leave', date: '2024-08-01', status: 'Approved' },
-    { id: 'LVE004', employeeId: 'EMP002', leaveType: 'Annual Leave', date: '2024-08-05', status: 'Rejected' },
+    { id: 'LVE001', employeeId: '12345-1234567-1', leaveType: 'Annual Leave', date: '2024-07-29', status: 'Pending' },
+    { id: 'LVE002', employeeId: '12345-1234567-5', leaveType: 'Sick Leave', date: '2024-07-28', status: 'Pending' },
+    { id: 'LVE003', employeeId: '12345-1234567-6', leaveType: 'Casual Leave', date: '2024-08-01', status: 'Approved' },
+    { id: 'LVE004', employeeId: '12345-1234567-2', leaveType: 'Annual Leave', date: '2024-08-05', status: 'Rejected' },
 ];
+
+    
