@@ -12,9 +12,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, KeyRound } from "lucide-react";
+import { Pencil, Trash2, KeyRound, CalendarDays } from "lucide-react";
 import type { Employee } from "@/lib/data";
-import { format, isValid, parseISO } from "date-fns";
+import { format, isValid } from "date-fns";
+import Link from "next/link";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -114,6 +115,12 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword }:
                      <Button variant="ghost" size="icon" onClick={() => onManagePassword(employee)} title="Manage Credentials">
                         <KeyRound className="h-4 w-4" />
                         <span className="sr-only">Manage Credentials</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" asChild title="Leave Details">
+                        <Link href={`/employees/${employee.id}/leave-details`}>
+                            <CalendarDays className="h-4 w-4" />
+                            <span className="sr-only">Leave Details</span>
+                        </Link>
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)} className="text-destructive hover:text-destructive" title="Delete Employee">
                         <Trash2 className="h-4 w-4" />
