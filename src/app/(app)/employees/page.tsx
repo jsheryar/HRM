@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, KeyRound } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/auth-context";
@@ -65,7 +65,8 @@ export default function EmployeesPage() {
   const { employees, setEmployees } = useAuth();
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isFormDialogOpen, setIsFormDialogOpen] = React.useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = React.useState<string | null>(null);
@@ -76,7 +77,7 @@ export default function EmployeesPage() {
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
   
-  const openDialog = (employee: Employee | null = null) => {
+  const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     setPhotoPreview(employee?.photo || null);
@@ -95,7 +96,12 @@ export default function EmployeesPage() {
         setObtainedMarks("");
         setTotalMarks("");
     }
-    setIsDialogOpen(true);
+    setIsFormDialogOpen(true);
+  }
+
+  const openPasswordDialog = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsPasswordDialogOpen(true);
   }
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -108,12 +114,11 @@ export default function EmployeesPage() {
     const completionDate = formData.get("completionDate") as string;
     const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
 
-    const employeeData = {
+    const employeeData: Omit<Employee, 'password'> & { password?: string } = {
       id: cnic, // Use CNIC as the employee ID
       fullName: formData.get("fullName") as string,
       fatherName: formData.get("fatherName") as string,
       cnic: cnic,
-      password: formData.get("password") as string,
       mobileNumber: formData.get("mobileNumber") as string,
       email: formData.get("email") as string,
       photo: photoPreview || 'https://placehold.co/100x100.png',
@@ -129,10 +134,10 @@ export default function EmployeesPage() {
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps || !employeeData.password) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
         toast({
             title: "Error",
-            description: "Please fill out all required fields, including password.",
+            description: "Please fill out all required fields.",
             variant: "destructive",
         });
         return;
@@ -146,21 +151,44 @@ export default function EmployeesPage() {
         description: "Employee updated successfully.",
       });
     } else {
-      updatedEmployees = [...employeeList, employeeData as Employee];
+      updatedEmployees = [...employeeList, { ...employeeData, password: 'password' } as Employee];
       toast({
         title: "Success",
-        description: "Employee added successfully.",
+        description: "Employee added successfully. Default password assigned.",
       });
     }
 
     setEmployees(updatedEmployees);
     setEmployeeList(updatedEmployees);
     setFilteredEmployees(updatedEmployees);
-    setIsDialogOpen(false);
+    setIsFormDialogOpen(false);
     setSelectedEmployee(null);
     setPhotoPreview(null);
   };
   
+  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+    
+    if (!password || !selectedEmployee) {
+      toast({ title: "Error", description: "Please enter a password.", variant: "destructive" });
+      return;
+    }
+
+    const updatedEmployees = employeeList.map(emp => 
+      emp.id === selectedEmployee.id ? { ...emp, password } : emp
+    );
+
+    setEmployees(updatedEmployees);
+    setEmployeeList(updatedEmployees);
+    setFilteredEmployees(updatedEmployees);
+    
+    toast({ title: "Success", description: "Password updated successfully." });
+    setIsPasswordDialogOpen(false);
+    setSelectedEmployee(null);
+  }
+
   const handleDeleteClick = (employeeId: string) => {
     setEmployeeToDelete(employeeId);
     setIsDeleteAlertOpen(true);
@@ -273,9 +301,9 @@ export default function EmployeesPage() {
           <h1 className="text-3xl font-headline font-bold tracking-tight">Employee Directory</h1>
           <p className="text-muted-foreground">Manage and view employee information.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
+        <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => { setIsFormDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
           <DialogTrigger asChild>
-            <Button onClick={() => openDialog()}>
+            <Button onClick={() => openFormDialog()}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Employee
             </Button>
@@ -320,10 +348,6 @@ export default function EmployeesPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input id="password" name="password" type="password" defaultValue={selectedEmployee?.password} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>
@@ -476,16 +500,16 @@ export default function EmployeesPage() {
           <TabsTrigger value="Labour Colony">Labour Colonies</TabsTrigger>
         </TabsList>
         <TabsContent value="All">
-            <EmployeeTable employees={filteredEmployees} onEdit={openDialog} onDelete={handleDeleteClick}/>
+            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} />
         </TabsContent>
         <TabsContent value="Head Office">
-          <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Head Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
+          <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Head Office')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
         <TabsContent value="Zonal Office">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Zonal Office')} onEdit={openDialog} onDelete={handleDeleteClick} />
+            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Zonal Office')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
         <TabsContent value="Labour Colony">
-            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Labour Colony')} onEdit={openDialog} onDelete={handleDeleteClick} />
+            <EmployeeTable employees={filteredEmployees.filter(e => e.station === 'Labour Colony')} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog}/>
         </TabsContent>
       </Tabs>
 
@@ -503,8 +527,32 @@ export default function EmployeesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isPasswordDialogOpen} onOpenChange={(isOpen) => { setIsPasswordDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Manage Credentials</DialogTitle>
+              <DialogDescription>
+                Set the password for {selectedEmployee?.fullName}.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="loginId">Login ID (CNIC)</Label>
+                    <Input id="loginId" value={selectedEmployee?.cnic || ''} disabled />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">New Password</Label>
+                    <Input id="password" name="password" type="password" required autoFocus />
+                  </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Set Password</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 "use client";
 import * as React from "react";
 import {
@@ -11,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, KeyRound } from "lucide-react";
 import type { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 
@@ -19,6 +20,7 @@ interface EmployeeTableProps {
   employees: Employee[];
   onEdit: (employee: Employee) => void;
   onDelete: (employeeId: string) => void;
+  onManagePassword: (employee: Employee) => void;
 }
 
 const formatDate = (dateString: string | null) => {
@@ -31,7 +33,7 @@ const formatDate = (dateString: string | null) => {
 }
 
 
-export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
+export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword }: EmployeeTableProps) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -91,7 +93,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                     <ul className="text-sm text-muted-foreground list-disc pl-4">
                       {employee.transferHistory.map((t, i) => (
                         <li key={i}>
-                          {t.station} ({formatDate(t.fromDate)} - {t.toDate ? formatDate(t.toDate) : 'Present'})
+                          {t.station} ({t.fromDate ? formatDate(t.fromDate) : ''} - {t.toDate ? formatDate(t.toDate) : 'Present'})
                         </li>
                       ))}
                     </ul>
@@ -105,11 +107,15 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(employee)}>
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(employee)} title="Edit Employee">
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)}>
+                     <Button variant="ghost" size="icon" onClick={() => onManagePassword(employee)} title="Manage Credentials">
+                        <KeyRound className="h-4 w-4" />
+                        <span className="sr-only">Manage Credentials</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(employee.id)} className="text-destructive hover:text-destructive" title="Delete Employee">
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
                     </Button>
