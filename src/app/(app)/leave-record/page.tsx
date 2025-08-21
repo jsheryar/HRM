@@ -1,3 +1,4 @@
+
 "use client"
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -5,23 +6,43 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, MinusCircle, PlusCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { employees } from "@/lib/data";
+import { employees, leaveRequests as initialLeaveRequests, LeaveRequest } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 
 export default function LeaveRecordPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [leaveType, setLeaveType] = React.useState<string>();
   const [employeeId, setEmployeeId] = React.useState<string>();
+  const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>(initialLeaveRequests);
   const { toast } = useToast();
 
   const leaveBalances = {
     "Annual Leave": 12,
     "Sick Leave": 8,
     "Casual Leave": 5,
+  };
+
+  const getEmployeeName = (id: string) => {
+    return employees.find(e => e.id === id)?.fullName || "Unknown";
+  }
+
+  const handleRequestStatusChange = (requestId: string, newStatus: 'Approved' | 'Rejected') => {
+    setLeaveRequests(currentRequests =>
+      currentRequests.map(req =>
+        req.id === requestId ? { ...req, status: newStatus } : req
+      )
+    );
+    const employeeName = getEmployeeName(leaveRequests.find(r => r.id === requestId)!.employeeId);
+    toast({
+        title: `Request ${newStatus}`,
+        description: `Leave request for ${employeeName} has been ${newStatus.toLowerCase()}.`
+    })
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,7 +56,6 @@ export default function LeaveRecordPage() {
         return;
     }
     
-    // Mock AI check for negative balance
     if (leaveBalances[leaveType as keyof typeof leaveBalances] <= 0) {
       toast({
           title: "AI Check Failed",
@@ -45,6 +65,15 @@ export default function LeaveRecordPage() {
       return;
     }
 
+    const newRequest: LeaveRequest = {
+        id: `LVE${String(leaveRequests.length + 1).padStart(3, '0')}`,
+        employeeId,
+        leaveType,
+        date: format(date, "yyyy-MM-dd"),
+        status: 'Pending',
+    };
+
+    setLeaveRequests(currentRequests => [...currentRequests, newRequest]);
     const employeeName = employees.find(emp => emp.id === employeeId)?.fullName || "Unknown";
 
     toast({
@@ -138,6 +167,59 @@ export default function LeaveRecordPage() {
             </div>
             <Button type="submit">Submit Request</Button>
           </form>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Leave Approval</CardTitle>
+          <CardDescription>Review and approve or reject leave requests.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <div className="rounded-lg border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Employee</TableHead>
+                            <TableHead>Leave Type</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {leaveRequests.map((request) => (
+                            <TableRow key={request.id}>
+                                <TableCell className="font-medium">{getEmployeeName(request.employeeId)}</TableCell>
+                                <TableCell>{request.leaveType}</TableCell>
+                                <TableCell>{format(parseISO(request.date), "PPP")}</TableCell>
+                                <TableCell>
+                                    <Badge variant={
+                                        request.status === 'Pending' ? 'secondary' : 
+                                        request.status === 'Approved' ? 'default' : 'destructive'
+                                    } className={request.status === 'Approved' ? 'bg-green-500' : ''}>
+                                        {request.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    {request.status === 'Pending' && (
+                                        <>
+                                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleRequestStatusChange(request.id, 'Approved')}>
+                                                <CheckCircle className="h-4 w-4" />
+                                                <span className="sr-only">Approve</span>
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700" onClick={() => handleRequestStatusChange(request.id, 'Rejected')}>
+                                                <XCircle className="h-4 w-4" />
+                                                <span className="sr-only">Reject</span>
+                                            </Button>
+                                        </>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </CardContent>
       </Card>
     </div>

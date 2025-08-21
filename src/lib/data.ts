@@ -1,3 +1,4 @@
+
 export type Transfer = {
   station: string;
   fromDate: string;
@@ -22,6 +23,14 @@ export type Employee = {
   dateOfBirth: string;
   transferHistory: Transfer[];
   status: 'Active' | 'Inactive';
+};
+
+export type LeaveRequest = {
+  id: string;
+  employeeId: string;
+  leaveType: string;
+  date: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
 };
 
 export const employees: Employee[] = [
@@ -314,4 +323,10 @@ export const employees: Employee[] = [
   },
 ];
 
-    
+
+export const leaveRequests: LeaveRequest[] = [
+    { id: 'LVE001', employeeId: 'EMP001', leaveType: 'Annual Leave', date: '2024-07-29', status: 'Pending' },
+    { id: 'LVE002', employeeId: 'EMP005', leaveType: 'Sick Leave', date: '2024-07-28', status: 'Pending' },
+    { id: 'LVE003', employeeId: 'EMP006', leaveType: 'Casual Leave', date: '2024-08-01', status: 'Approved' },
+    { id: 'LVE004', employeeId: 'EMP002', leaveType: 'Annual Leave', date: '2024-08-05', status: 'Rejected' },
+];
