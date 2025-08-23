@@ -119,6 +119,7 @@ export default function MyProfilePage() {
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                     <div><span className="font-medium">Father's Name:</span> {employee.fatherName}</div>
                     <div><span className="font-medium">Date of Birth:</span> {formatDate(employee.dateOfBirth)}</div>
+                    <div><span className="font-medium">Domicile:</span> {employee.domicile}</div>
                     <div><span className="font-medium">Education:</span> {employee.education}</div>
                 </CardContent>
             </Card>

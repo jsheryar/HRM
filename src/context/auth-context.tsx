@@ -20,6 +20,8 @@ type AuthContextType = {
   changePassword: (userId: string, currentPassword?: string, newPassword?: string) => Promise<boolean>;
   users: User[];
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  domiciles: string[];
+  setDomiciles: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
   const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
+  const [domiciles, setDomiciles] = useState<string[]>(() => getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -86,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!loading) {
       if (user && pathname === '/login') {
-        const redirectPath = user.role === 'Admin' || user.role === 'admin' ? '/' : '/my-profile';
+        const redirectPath = user.role.toLowerCase() === 'admin' ? '/' : '/my-profile';
         router.push(redirectPath);
       }
     }
@@ -115,6 +118,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveToLocalStorage('logoUrl', logoUrl);
   }, [logoUrl]);
+  
+  useEffect(() => {
+    saveToLocalStorage('domiciles', domiciles);
+  }, [domiciles]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
@@ -203,7 +210,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLogoUrl,
     changePassword,
     users,
-    setUsers
+    setUsers,
+    domiciles,
+    setDomiciles
   };
 
   return (

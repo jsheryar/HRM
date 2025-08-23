@@ -9,14 +9,14 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Employee } from "@/lib/data";
+import { User } from "@/lib/data";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { KeyRound, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
-    const { user, logoUrl, setLogoUrl, changePassword, users, setUsers } = useAuth();
+    const { user, logoUrl, setLogoUrl, changePassword, users, setUsers, domiciles, setDomiciles } = useAuth();
     const [logoPreview, setLogoPreview] = React.useState<string | null>(logoUrl);
     const { toast } = useToast();
     const [currentPassword, setCurrentPassword] = React.useState("");
@@ -28,7 +28,9 @@ export default function SettingsPage() {
     const [isUserDeleteAlertOpen, setIsUserDeleteAlertOpen] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
     const [userToDelete, setUserToDelete] = React.useState<string | null>(null);
-
+    
+    // State for domicile management
+    const [newDomicile, setNewDomicile] = React.useState("");
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -143,6 +145,21 @@ export default function SettingsPage() {
         setUserToDelete(null);
     }
 
+    const handleAddDomicile = () => {
+        if (newDomicile && !domiciles.includes(newDomicile)) {
+            setDomiciles([...domiciles, newDomicile].sort());
+            setNewDomicile("");
+            toast({ title: "Success", description: `Added "${newDomicile}" to domiciles.`});
+        } else if (domiciles.includes(newDomicile)) {
+             toast({ title: "Warning", description: `"${newDomicile}" already exists.`, variant: "destructive"});
+        }
+    }
+
+    const handleDeleteDomicile = (domicileToDelete: string) => {
+        setDomiciles(domiciles.filter(d => d !== domicileToDelete));
+        toast({ title: "Success", description: `Removed "${domicileToDelete}" from domiciles.`});
+    }
+
     const userRole = user?.role?.toLowerCase();
     if (userRole !== 'admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
@@ -206,6 +223,45 @@ export default function SettingsPage() {
                         </div>
                         <Button type="submit">Save Password</Button>
                     </form>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Domicile Management</CardTitle>
+                    <CardDescription>Add or remove domicile locations for employee records.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex gap-2 mb-4">
+                        <Input 
+                            placeholder="Enter new domicile..."
+                            value={newDomicile}
+                            onChange={(e) => setNewDomicile(e.target.value)}
+                        />
+                        <Button onClick={handleAddDomicile}>Add Domicile</Button>
+                    </div>
+                     <div className="rounded-lg border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Domicile Name</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {domiciles.map(domicile => (
+                                    <TableRow key={domicile}>
+                                        <TableCell className="font-medium">{domicile}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteDomicile(domicile)} className="text-destructive hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                     </div>
                 </CardContent>
             </Card>
 
@@ -311,5 +367,3 @@ export default function SettingsPage() {
         </div>
     );
 }
-
-    

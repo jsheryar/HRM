@@ -91,6 +91,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                   <div className="font-medium">{employee.mobileNumber}</div>
                   <div className="text-sm text-muted-foreground">{employee.email}</div>
                   <div className="text-sm text-muted-foreground">CNIC: {employee.cnic}</div>
+                  <div className="text-sm text-muted-foreground">Domicile: {employee.domicile}</div>
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{isValid(new Date(employee.dateOfAppointment)) ? format(new Date(employee.dateOfAppointment), "dd MMM, yyyy") : 'N/A'}</div>

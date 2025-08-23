@@ -39,6 +39,7 @@ const allFields = [
     { id: 'cnic', label: 'CNIC', group: 'employee' },
     { id: 'fatherName', label: "Father's Name", group: 'personal' },
     { id: 'dateOfBirth', label: 'Date of Birth', group: 'personal' },
+    { id: 'domicile', label: 'Domicile', group: 'personal' },
     { id: 'mobileNumber', label: 'Mobile Number', group: 'personal' },
     { id: 'email', label: 'Email', group: 'personal' },
     { id: 'education', label: 'Education', group: 'personal' },
@@ -68,6 +69,7 @@ const formatPersonalDetailsForExport = (emp: Employee, fields: FieldId[]) => {
      const details = [];
     if (fields.includes('fatherName')) details.push(`Father: ${emp.fatherName}`);
     if (fields.includes('dateOfBirth')) details.push(`DOB: ${emp.dateOfBirth}`);
+    if (fields.includes('domicile')) details.push(`Domicile: ${emp.domicile}`);
     if (fields.includes('mobileNumber')) details.push(`Contact: ${emp.mobileNumber}`);
     if (fields.includes('email')) details.push(`Email: ${emp.email}`);
     if (fields.includes('education')) details.push(`Education: ${emp.education}`);

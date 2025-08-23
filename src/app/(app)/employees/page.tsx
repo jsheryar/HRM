@@ -62,7 +62,7 @@ const stationOptions = ["Head Office", "Zonal Office", "Labour Colony"];
 
 
 export default function EmployeesPage() {
-  const { employees, setEmployees, user } = useAuth();
+  const { employees, setEmployees, user, domiciles } = useAuth();
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
   const [isFormDialogOpen, setIsFormDialogOpen] = React.useState(false);
@@ -86,6 +86,7 @@ export default function EmployeesPage() {
   const [formBps, setFormBps] = React.useState<string | undefined>();
   const [formStation, setFormStation] = React.useState<string | undefined>();
   const [formEmploymentType, setFormEmploymentType] = React.useState<string | undefined>();
+  const [formDomicile, setFormDomicile] = React.useState<string | undefined>();
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
@@ -99,6 +100,7 @@ export default function EmployeesPage() {
     setFormBps(employee?.bps);
     setFormStation(employee?.station);
     setFormEmploymentType(employee?.employmentType);
+    setFormDomicile(employee?.domicile);
 
     if(employee && employee.education) {
         const eduParts = employee.education.split(',').map(p => p.trim());
@@ -149,13 +151,14 @@ export default function EmployeesPage() {
       employmentType: formEmploymentType as 'Permanent' | 'Contract' | 'Daily-wage' || 'Permanent',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
+      domicile: formDomicile || '',
       transferHistory: transferHistory,
       trainings: trainings,
       certificates: certificates,
       status: selectedEmployee?.status || 'Active',
     };
     
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps) {
+    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps || !employeeData.domicile) {
         toast({
             title: "Error",
             description: "Please fill out all required fields.",
@@ -470,6 +473,17 @@ export default function EmployeesPage() {
                     <div className="space-y-2">
                       <Label htmlFor="dateOfBirth">Date of Birth</Label>
                       <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="domicile">Domicile</Label>
+                        <Select name="domicile" value={formDomicile} onValueChange={setFormDomicile} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a domicile" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {domiciles.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 

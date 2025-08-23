@@ -37,6 +37,7 @@ const allFields = [
     { id: 'designation', label: 'Designation' },
     { id: 'bps', label: 'BPS' },
     { id: 'education', label: 'Education' },
+    { id: 'domicile', label: 'Domicile' },
     { id: 'station', label: 'Station' },
     { id: 'employmentType', label: 'Employment Type' },
     { id: 'dateOfAppointment', label: 'Date of Appointment' },
@@ -63,6 +64,7 @@ const formatPersonalDetailsForExport = (emp: Employee, fields: FieldId[]) => {
      const details = [];
     if (fields.includes('fatherName')) details.push(`Father: ${emp.fatherName}`);
     if (fields.includes('dateOfBirth')) details.push(`DOB: ${emp.dateOfBirth}`);
+    if (fields.includes('domicile')) details.push(`Domicile: ${emp.domicile}`);
     if (fields.includes('mobileNumber')) details.push(`Contact: ${emp.mobileNumber}`);
     if (fields.includes('email')) details.push(`Email: ${emp.email}`);
     if (fields.includes('education')) details.push(`Education: ${emp.education}`);
