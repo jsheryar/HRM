@@ -56,7 +56,7 @@ export default function LoginPage() {
               <Label htmlFor="loginId">Login ID (Email or CNIC)</Label>
               <Input
                 id="loginId"
-                placeholder="admin@zoneflow.com or 12345-1234567-1"
+                placeholder="sheryarjavedwwb@gmail.com or 12345-1234567-1"
                 required
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
@@ -83,5 +83,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    

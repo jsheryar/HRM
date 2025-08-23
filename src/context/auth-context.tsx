@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const initialAdminUser: User = {
         id: 'admin',
         name: 'Admin User',
-        email: 'admin@zoneflow.com',
+        email: 'sheryarjavedwwb@gmail.com',
         role: 'Admin',
         password: 'admin',
     };
@@ -238,5 +238,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
