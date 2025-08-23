@@ -2,7 +2,7 @@
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Employee, Transfer, Training, Certificate, Promotion } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate, Promotion, Upgradation } from "@/lib/data";
 import { EmployeeTable } from "@/components/app/employee-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2, KeyRound, Search, Award, CheckSquare, TrendingUp } from "lucide-react";
+import { PlusCircle, Trash2, KeyRound, Search, Award, CheckSquare, TrendingUp, ArrowUpCircle } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/auth-context";
@@ -73,6 +73,7 @@ export default function EmployeesPage() {
   const [percentage, setPercentage] = React.useState<string>("");
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
   const [promotionHistory, setPromotionHistory] = React.useState<Promotion[]>([]);
+  const [upgradationHistory, setUpgradationHistory] = React.useState<Upgradation[]>([]);
   const [trainings, setTrainings] = React.useState<Training[]>([]);
   const [certificates, setCertificates] = React.useState<Certificate[]>([]);
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
@@ -91,6 +92,7 @@ export default function EmployeesPage() {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
+    setUpgradationHistory(employee?.upgradationHistory ? [...employee.upgradationHistory] : []);
     setTrainings(employee?.trainings ? [...employee.trainings] : []);
     setCertificates(employee?.certificates ? [...employee.certificates] : []);
     setPhotoPreview(employee?.photo || null);
@@ -154,6 +156,7 @@ export default function EmployeesPage() {
       domicile: formDomicile || '',
       transferHistory: transferHistory,
       promotionHistory: promotionHistory,
+      upgradationHistory: upgradationHistory,
       trainings: trainings,
       certificates: certificates,
       status: selectedEmployee?.status || 'Active',
@@ -279,6 +282,21 @@ export default function EmployeesPage() {
   const removePromotionRecord = (index: number) => {
     const updatedHistory = promotionHistory.filter((_, i) => i !== index);
     setPromotionHistory(updatedHistory);
+  };
+  
+  const handleUpgradationChange = (index: number, field: keyof Upgradation, value: string) => {
+    const updatedHistory = [...upgradationHistory];
+    updatedHistory[index] = { ...updatedHistory[index], [field]: value };
+    setUpgradationHistory(updatedHistory);
+  };
+
+  const addUpgradationRecord = () => {
+    setUpgradationHistory([...upgradationHistory, { date: '', designation: '', bps: '' }]);
+  };
+
+  const removeUpgradationRecord = (index: number) => {
+    const updatedHistory = upgradationHistory.filter((_, i) => i !== index);
+    setUpgradationHistory(updatedHistory);
   };
 
   const handleDynamicListChange = (index: number, field: 'name' | 'date', value: string, listType: 'training' | 'certificate') => {
@@ -575,6 +593,50 @@ export default function EmployeesPage() {
                   <Button type="button" variant="outline" size="sm" onClick={addPromotionRecord}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Promotion Record
+                  </Button>
+                </div>
+                
+                 <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2"><ArrowUpCircle className="h-5 w-5" /> Upgradation History</h3>
+                  <div className="space-y-4">
+                    {upgradationHistory.map((upgrade, index) => (
+                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor={`upgrade_date_${index}`}>Date</Label>
+                          <Input id={`upgrade_date_${index}`} type="date" value={upgrade.date} onChange={(e) => handleUpgradationChange(index, 'date', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                           <Label htmlFor={`upgrade_designation_${index}`}>Designation</Label>
+                           <Select value={upgrade.designation} onValueChange={(value) => handleUpgradationChange(index, 'designation', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Designation" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                           <Label htmlFor={`upgrade_bps_${index}`}>BPS</Label>
+                           <Select value={upgrade.bps} onValueChange={(value) => handleUpgradationChange(index, 'bps', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select BPS" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => removeUpgradationRecord(index)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove Upgradation</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={addUpgradationRecord}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Upgradation Record
                   </Button>
                 </div>
 

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/lib/data";
 import { format, isValid, parseISO, intervalToDuration } from "date-fns";
 import { useAuth } from "@/context/auth-context";
-import { CheckSquare, Award, TrendingUp } from "lucide-react";
+import { CheckSquare, Award, TrendingUp, ArrowUpCircle } from "lucide-react";
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -140,6 +140,26 @@ export default function MyProfilePage() {
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground">No promotion history recorded.</p>
+                  )}
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ArrowUpCircle className="h-5 w-5" /> Upgradation History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {employee.upgradationHistory && employee.upgradationHistory.length > 0 ? (
+                    <ul className="space-y-3">
+                      {employee.upgradationHistory.map((u, i) => (
+                        <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                           <span>{u.designation} ({u.bps})</span>
+                           <span>{formatDate(u.date)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No upgradation history recorded.</p>
                   )}
                 </CardContent>
             </Card>

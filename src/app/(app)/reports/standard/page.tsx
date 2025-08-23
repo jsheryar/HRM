@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, Printer } from "lucide-react";
-import { Employee, Transfer, Training, Certificate, Promotion } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate, Promotion, Upgradation } from "@/lib/data";
 import { format, isValid, parseISO } from 'date-fns';
 
 
@@ -21,6 +21,11 @@ const formatTransferHistory = (history: Transfer[]): string => {
 const formatPromotionHistory = (history: Promotion[]): string => {
     if (!history || history.length === 0) return 'N/A';
     return history.map(p => `${p.designation} (${p.bps}) on ${isValid(parseISO(p.date)) ? format(parseISO(p.date), 'dd MMM, yyyy') : 'N/A'}`).join('; ');
+}
+
+const formatUpgradationHistory = (history: Upgradation[]): string => {
+    if (!history || history.length === 0) return 'N/A';
+    return history.map(u => `${u.designation} (${u.bps}) on ${isValid(parseISO(u.date)) ? format(parseISO(u.date), 'dd MMM, yyyy') : 'N/A'}`).join('; ');
 }
 
 const formatTrainingList = (list: Training[]): string => {
@@ -49,6 +54,7 @@ const allFields = [
     { id: 'dateOfBirth', label: 'Date of Birth' },
     { id: 'transferHistory', label: 'Transfer History' },
     { id: 'promotionHistory', label: 'Promotion History' },
+    { id: 'upgradationHistory', label: 'Upgradation History' },
     { id: 'status', label: 'Status' },
     { id: 'trainings', label: 'Trainings Attended' },
     { id: 'certificates', label: 'Certificates Awarded' },
@@ -85,6 +91,7 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`Transfers: ${formatTransferHistory(emp.transferHistory)}`);
     if (fields.includes('promotionHistory')) details.push(`Promotions: ${formatPromotionHistory(emp.promotionHistory)}`);
+    if (fields.includes('upgradationHistory')) details.push(`Upgradations: ${formatUpgradationHistory(emp.upgradationHistory)}`);
     if (fields.includes('trainings')) details.push(`Trainings: ${formatTrainingList(emp.trainings)}`);
     if (fields.includes('certificates')) details.push(`Certificates: ${formatCertificateList(emp.certificates)}`);
     return details.join('\n');
