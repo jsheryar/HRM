@@ -11,17 +11,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from "@/lib/data";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { KeyRound, Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, PlusCircle, Trash2, Upload, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
-    const { user, logoUrl, setLogoUrl, changePassword, users, setUsers, domiciles, setDomiciles, stations, setStations } = useAuth();
+    const { 
+        user, logoUrl, setLogoUrl, changePassword, users, setUsers, 
+        domiciles, setDomiciles, stations, setStations,
+        employees, leavePolicies, leaveRequests
+    } = useAuth();
     const [logoPreview, setLogoPreview] = React.useState<string | null>(logoUrl);
     const { toast } = useToast();
     const [currentPassword, setCurrentPassword] = React.useState("");
     const [newPassword, setNewPassword] = React.useState("");
     const [confirmPassword, setConfirmPassword] = React.useState("");
+    const restoreFileInputRef = React.useRef<HTMLInputElement>(null);
+
 
     // State for user management
     const [isUserFormOpen, setIsUserFormOpen] = React.useState(false);
@@ -177,6 +183,82 @@ export default function SettingsPage() {
         toast({ title: "Success", description: `Removed "${stationToDelete}" from stations.`});
     }
 
+    const handleBackup = () => {
+        try {
+            const backupData = {
+                users,
+                employees,
+                leaveRequests,
+                leavePolicies,
+                logoUrl,
+                domiciles,
+                stations,
+            };
+            const jsonString = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `zoneflow-hr-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast({ title: "Success", description: "Backup downloaded successfully." });
+        } catch (error) {
+            console.error("Backup failed:", error);
+            toast({ title: "Error", description: "Could not create backup file.", variant: "destructive"});
+        }
+    };
+
+    const handleRestore = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const text = e.target?.result;
+                if (typeof text !== 'string') throw new Error("File could not be read");
+
+                const restoredData = JSON.parse(text);
+
+                // Basic validation to ensure it's a valid backup file
+                const requiredKeys = ['users', 'employees', 'leaveRequests', 'leavePolicies', 'logoUrl', 'domiciles', 'stations'];
+                const hasAllKeys = requiredKeys.every(key => key in restoredData);
+                if (!hasAllKeys) {
+                    throw new Error("Invalid backup file format.");
+                }
+
+                // Restore data by updating the state from AuthContext
+                setUsers(restoredData.users);
+                setStations(restoredData.stations);
+                setDomiciles(restoredData.domiciles);
+                setLogoUrl(restoredData.logoUrl);
+                // The following are not directly settable from AuthContext, we need to overwrite local storage
+                // and force a reload for a clean state restoration.
+                localStorage.setItem('employees', JSON.stringify(restoredData.employees));
+                localStorage.setItem('leavePolicies', JSON.stringify(restoredData.leavePolicies));
+                localStorage.setItem('leaveRequests', JSON.stringify(restoredData.leaveRequests));
+
+                toast({ title: "Success", description: "Data restored successfully. The application will now reload." });
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+
+            } catch (error) {
+                console.error("Restore failed:", error);
+                const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+                toast({ title: "Error", description: `Could not restore data. ${errorMessage}`, variant: "destructive" });
+            } finally {
+                // Reset file input so the same file can be selected again
+                if(restoreFileInputRef.current) {
+                    restoreFileInputRef.current.value = "";
+                }
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const userRole = user?.role?.toLowerCase();
     if (userRole !== 'admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
@@ -188,6 +270,30 @@ export default function SettingsPage() {
                 <h1 className="text-3xl font-headline font-bold tracking-tight">Settings</h1>
                 <p className="text-muted-foreground">Manage application-wide settings and branding.</p>
             </div>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Backup & Restore</CardTitle>
+                    <CardDescription>Download a backup of all application data or restore it from a file.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-4">
+                    <Button onClick={handleBackup}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Backup Data
+                    </Button>
+                    <Button variant="outline" onClick={() => restoreFileInputRef.current?.click()}>
+                         <Upload className="mr-2 h-4 w-4" />
+                        Restore from File
+                    </Button>
+                    <Input 
+                        type="file" 
+                        className="hidden" 
+                        ref={restoreFileInputRef} 
+                        onChange={handleRestore}
+                        accept="application/json"
+                    />
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>
