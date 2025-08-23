@@ -76,7 +76,8 @@ export default function RetirementReportPage() {
     
     const handlePrint = () => { window.print(); };
     
-    if (user?.role !== 'admin' && user?.role !== 'sub-admin') {
+    const userRole = user?.role?.toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'sub admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
     }
 
