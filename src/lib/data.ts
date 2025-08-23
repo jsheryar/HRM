@@ -15,6 +15,12 @@ export type Certificate = {
   date: string;
 };
 
+export type Promotion = {
+  date: string;
+  designation: string;
+  bps: string;
+};
+
 export type Employee = {
   id: string;
   fullName: string;
@@ -34,6 +40,7 @@ export type Employee = {
   dateOfBirth: string;
   domicile: string;
   transferHistory: Transfer[];
+  promotionHistory: Promotion[];
   status: 'Active' | 'Inactive';
   trainings: Training[];
   certificates: Certificate[];
@@ -90,6 +97,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1995-02-20',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [{ name: 'Advanced React', date: '2023-10-15' }, { name: 'Node.js Fundamentals', date: '2023-05-20' }],
     certificates: [{ name: 'Certified JavaScript Developer', date: '2023-12-01' }],
@@ -113,6 +121,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1990-08-10',
     domicile: 'Sindh',
     transferHistory: [],
+    promotionHistory: [{ date: '2023-05-20', designation: 'HR Manager', bps: 'BPS-18' }],
     status: 'Active',
     trainings: [{ name: 'Conflict Resolution', date: '2022-03-10' }, { name: 'Talent Acquisition', date: '2022-09-01' }],
     certificates: [{ name: 'SHRM-CP', date: '2023-01-25' }],
@@ -136,6 +145,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1998-12-05',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [{ name: 'Safety at Work', date: '2023-02-15' }],
     certificates: [],
@@ -159,6 +169,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1992-06-25',
     domicile: 'Khyber Pakhtunkhwa',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -182,6 +193,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1996-04-12',
     domicile: 'Sindh',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -207,6 +219,7 @@ export const employees: Employee[] = [
     transferHistory: [
       { station: 'Colony 5', fromDate: '2021-01-01', toDate: '2022-12-31' },
     ],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -230,6 +243,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1993-01-15',
     domicile: 'Balochistan',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Inactive',
     trainings: [],
     certificates: [],
@@ -253,6 +267,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1997-07-07',
     domicile: 'Sindh',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -276,6 +291,7 @@ export const employees: Employee[] = [
     dateOfBirth: '2000-03-22',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -299,6 +315,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1991-09-18',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -322,6 +339,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1994-10-28',
     domicile: 'Khyber Pakhtunkhwa',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -345,6 +363,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1985-05-14',
     domicile: 'Sindh',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -368,6 +387,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1999-01-01',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Inactive',
     trainings: [],
     certificates: [],
@@ -391,6 +411,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1996-08-20',
     domicile: 'Sindh',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -414,6 +435,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1992-03-03',
     domicile: 'Punjab',
     transferHistory: [],
+    promotionHistory: [],
     status: 'Active',
     trainings: [],
     certificates: [],
@@ -468,6 +490,7 @@ export const employees: Employee[] = [
       dateOfBirth: `${dobYear}-${String(dobMonth).padStart(2, '0')}-${String(dobDay).padStart(2, '0')}`,
       domicile: domicile,
       transferHistory: [],
+      promotionHistory: [],
       status: status,
       trainings: [],
       certificates: [],

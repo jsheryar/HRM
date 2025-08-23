@@ -2,7 +2,7 @@
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Employee, Transfer, Training, Certificate } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate, Promotion } from "@/lib/data";
 import { EmployeeTable } from "@/components/app/employee-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2, KeyRound, Search, Award, CheckSquare } from "lucide-react";
+import { PlusCircle, Trash2, KeyRound, Search, Award, CheckSquare, TrendingUp } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/auth-context";
@@ -72,6 +72,7 @@ export default function EmployeesPage() {
   const [totalMarks, setTotalMarks] = React.useState<number | string>("");
   const [percentage, setPercentage] = React.useState<string>("");
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
+  const [promotionHistory, setPromotionHistory] = React.useState<Promotion[]>([]);
   const [trainings, setTrainings] = React.useState<Training[]>([]);
   const [certificates, setCertificates] = React.useState<Certificate[]>([]);
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
@@ -89,6 +90,7 @@ export default function EmployeesPage() {
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
+    setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
     setTrainings(employee?.trainings ? [...employee.trainings] : []);
     setCertificates(employee?.certificates ? [...employee.certificates] : []);
     setPhotoPreview(employee?.photo || null);
@@ -151,6 +153,7 @@ export default function EmployeesPage() {
       dateOfBirth: formData.get("dateOfBirth") as string,
       domicile: formDomicile || '',
       transferHistory: transferHistory,
+      promotionHistory: promotionHistory,
       trainings: trainings,
       certificates: certificates,
       status: selectedEmployee?.status || 'Active',
@@ -263,6 +266,21 @@ export default function EmployeesPage() {
     setTransferHistory(updatedHistory);
   };
   
+  const handlePromotionChange = (index: number, field: keyof Promotion, value: string) => {
+    const updatedHistory = [...promotionHistory];
+    updatedHistory[index] = { ...updatedHistory[index], [field]: value };
+    setPromotionHistory(updatedHistory);
+  };
+
+  const addPromotionRecord = () => {
+    setPromotionHistory([...promotionHistory, { date: '', designation: '', bps: '' }]);
+  };
+
+  const removePromotionRecord = (index: number) => {
+    const updatedHistory = promotionHistory.filter((_, i) => i !== index);
+    setPromotionHistory(updatedHistory);
+  };
+
   const handleDynamicListChange = (index: number, field: 'name' | 'date', value: string, listType: 'training' | 'certificate') => {
     if (listType === 'training') {
         const updated = [...trainings];
@@ -515,6 +533,51 @@ export default function EmployeesPage() {
                         </div>
                     </div>
                 </div>
+                
+                 <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Promotion History</h3>
+                  <div className="space-y-4">
+                    {promotionHistory.map((promo, index) => (
+                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor={`promo_date_${index}`}>Date</Label>
+                          <Input id={`promo_date_${index}`} type="date" value={promo.date} onChange={(e) => handlePromotionChange(index, 'date', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                           <Label htmlFor={`promo_designation_${index}`}>Designation</Label>
+                           <Select value={promo.designation} onValueChange={(value) => handlePromotionChange(index, 'designation', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Designation" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                           <Label htmlFor={`promo_bps_${index}`}>BPS</Label>
+                           <Select value={promo.bps} onValueChange={(value) => handlePromotionChange(index, 'bps', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select BPS" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => removePromotionRecord(index)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove Promotion</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={addPromotionRecord}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Promotion Record
+                  </Button>
+                </div>
+
 
                 <div className="space-y-4 rounded-md border p-4">
                   <h3 className="text-lg font-medium">Transfer History</h3>
@@ -693,7 +756,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
-
-    
 
     

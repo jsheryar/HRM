@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare } from "lucide-react";
+import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare, TrendingUp } from "lucide-react";
 import type { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 import Link from "next/link";
@@ -50,6 +50,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
             <TableHead>Transfer History</TableHead>
+            <TableHead>Promotion History</TableHead>
             <TableHead>Training & Certs</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -110,6 +111,19 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                     <span className="text-sm text-muted-foreground">No transfers</span>
                   )}
                 </TableCell>
+                <TableCell>
+                  {employee.promotionHistory && employee.promotionHistory.length > 0 ? (
+                    <ul className="text-sm text-muted-foreground list-disc pl-4">
+                      {employee.promotionHistory.map((p, i) => (
+                        <li key={i}>
+                          {p.designation} ({p.bps}) on {formatDate(p.date)}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No promotions</span>
+                  )}
+                </TableCell>
                  <TableCell>
                     <div className="text-sm text-muted-foreground space-y-2">
                         {employee.trainings && employee.trainings.length > 0 && (
@@ -162,7 +176,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 No employees found.
               </TableCell>
             </TableRow>

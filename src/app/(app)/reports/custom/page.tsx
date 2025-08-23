@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, Settings2 } from "lucide-react";
-import { Employee, Transfer, Training, Certificate } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate, Promotion } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,10 @@ import 'jspdf-autotable';
 const formatTransferHistory = (history: Transfer[]): string => {
     if (!history || history.length === 0) return 'N/A';
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
+}
+const formatPromotionHistory = (history: Promotion[]): string => {
+    if (!history || history.length === 0) return 'N/A';
+    return history.map(p => `${p.designation} (${p.bps}) on ${isValid(parseISO(p.date)) ? format(parseISO(p.date), 'dd MMM, yyyy') : 'N/A'}`).join('; ');
 }
 const formatTrainingList = (list: Training[]): string => {
     if (!list || list.length === 0) return 'N/A';
@@ -49,6 +53,7 @@ const allFields = [
     { id: 'employmentType', label: 'Employment Type', group: 'employment' },
     { id: 'status', label: 'Status', group: 'employment' },
     { id: 'transferHistory', label: 'Transfer History', group: 'employment' },
+    { id: 'promotionHistory', label: 'Promotion History', group: 'employment' },
     { id: 'trainings', label: 'Trainings Attended', group: 'development' },
     { id: 'certificates', label: 'Certificates Awarded', group: 'development' },
 ] as const;
@@ -83,7 +88,8 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('dateOfAppointment')) details.push(`Appointed: ${emp.dateOfAppointment}`);
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
-    if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
+    if (fields.includes('transferHistory')) details.push(`Transfers: ${formatTransferHistory(emp.transferHistory)}`);
+    if (fields.includes('promotionHistory')) details.push(`Promotions: ${formatPromotionHistory(emp.promotionHistory)}`);
     if (fields.includes('trainings')) details.push(`Trainings: ${formatTrainingList(emp.trainings)}`);
     if (fields.includes('certificates')) details.push(`Certificates: ${formatCertificateList(emp.certificates)}`);
     return details.join('\n');
@@ -194,7 +200,8 @@ export default function CustomReportsPage() {
         doc.save('CustomEmployeeReport.pdf');
     };
     
-    if (user?.role?.toLowerCase() !== 'admin' && user?.role?.toLowerCase() !== 'sub admin') {
+    const userRole = user?.role?.toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'sub admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
     }
 
