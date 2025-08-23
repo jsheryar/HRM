@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare } from "lucide-react";
 import type { Employee } from "@/lib/data";
-import { format, isValid } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import Link from "next/link";
 
 interface EmployeeTableProps {
@@ -32,7 +32,7 @@ interface EmployeeTableProps {
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  const date = parseISO(dateString);
   if (isValid(date)) {
     return format(date, "MMM yyyy");
   }
@@ -111,18 +111,22 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                 </TableCell>
                  <TableCell>
                     <div className="text-sm text-muted-foreground space-y-2">
-                        {employee.trainings && employee.trainings.length > 0 && 
+                        {employee.trainings && employee.trainings.length > 0 && (
                             <div className="flex items-start gap-1.5">
                                 <CheckSquare className="h-4 w-4 mt-0.5 shrink-0" />
-                                <span>{employee.trainings.join(', ')}</span>
+                                <ul>
+                                    {employee.trainings.map((t, i) => <li key={i}>{t.name} ({formatDate(t.date)})</li>)}
+                                </ul>
                             </div>
-                        }
-                        {employee.certificates && employee.certificates.length > 0 && 
+                        )}
+                        {employee.certificates && employee.certificates.length > 0 && (
                              <div className="flex items-start gap-1.5">
                                 <Award className="h-4 w-4 mt-0.5 shrink-0" />
-                                <span>{employee.certificates.join(', ')}</span>
+                                <ul>
+                                    {employee.certificates.map((c, i) => <li key={i}>{c.name} ({formatDate(c.date)})</li>)}
+                                </ul>
                             </div>
-                        }
+                        )}
                          {(!employee.trainings || employee.trainings.length === 0) && (!employee.certificates || employee.certificates.length === 0) &&
                             <span>No records</span>
                          }
@@ -167,5 +171,3 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
-
-    

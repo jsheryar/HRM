@@ -5,13 +5,13 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, Settings2 } from "lucide-react";
-import { Employee, Transfer } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { parseISO, isWithinInterval } from "date-fns";
+import { parseISO, isWithinInterval, format, isValid } from "date-fns";
 
 
 // Dynamically import client-side libraries
@@ -22,10 +22,15 @@ const formatTransferHistory = (history: Transfer[]): string => {
     if (!history || history.length === 0) return 'N/A';
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
-const formatList = (list: string[]): string => {
+const formatTrainingList = (list: Training[]): string => {
     if (!list || list.length === 0) return 'N/A';
-    return list.join('; ');
+    return list.map(t => `${t.name} (${isValid(parseISO(t.date)) ? format(parseISO(t.date), 'dd MMM, yyyy') : 'N/A'})`).join('; ');
 }
+const formatCertificateList = (list: Certificate[]): string => {
+    if (!list || list.length === 0) return 'N/A';
+    return list.map(c => `${c.name} (${isValid(parseISO(c.date)) ? format(parseISO(c.date), 'dd MMM, yyyy') : 'N/A'})`).join('; ');
+}
+
 
 const allFields = [
     { id: 'fullName', label: 'Full Name', group: 'employee' },
@@ -77,8 +82,8 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
-    if (fields.includes('trainings')) details.push(`Trainings: ${formatList(emp.trainings)}`);
-    if (fields.includes('certificates')) details.push(`Certificates: ${formatList(emp.certificates)}`);
+    if (fields.includes('trainings')) details.push(`Trainings: ${formatTrainingList(emp.trainings)}`);
+    if (fields.includes('certificates')) details.push(`Certificates: ${formatCertificateList(emp.certificates)}`);
     return details.join('\n');
 }
 
@@ -327,5 +332,3 @@ export default function CustomReportsPage() {
         </div>
     );
 }
-
-    

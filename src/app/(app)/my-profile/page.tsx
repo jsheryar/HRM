@@ -152,7 +152,7 @@ export default function MyProfilePage() {
                     <ul className="space-y-2 list-disc pl-5">
                       {employee.trainings.map((t, i) => (
                         <li key={i} className="text-sm">
-                           {t}
+                           {t.name} ({formatDate(t.date)})
                         </li>
                       ))}
                     </ul>
@@ -171,7 +171,7 @@ export default function MyProfilePage() {
                     <ul className="space-y-2 list-disc pl-5">
                       {employee.certificates.map((c, i) => (
                         <li key={i} className="text-sm">
-                           {c}
+                           {c.name} ({formatDate(c.date)})
                         </li>
                       ))}
                     </ul>
@@ -186,5 +186,3 @@ export default function MyProfilePage() {
     </div>
   );
 }
-
-    

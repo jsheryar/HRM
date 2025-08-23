@@ -2,7 +2,7 @@
 "use client"
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Employee, Transfer } from "@/lib/data";
+import { Employee, Transfer, Training, Certificate } from "@/lib/data";
 import { EmployeeTable } from "@/components/app/employee-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,8 +74,8 @@ export default function EmployeesPage() {
   const [totalMarks, setTotalMarks] = React.useState<number | string>("");
   const [percentage, setPercentage] = React.useState<string>("");
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
-  const [trainings, setTrainings] = React.useState<string[]>([]);
-  const [certificates, setCertificates] = React.useState<string[]>([]);
+  const [trainings, setTrainings] = React.useState<Training[]>([]);
+  const [certificates, setCertificates] = React.useState<Certificate[]>([]);
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -262,23 +262,23 @@ export default function EmployeesPage() {
     setTransferHistory(updatedHistory);
   };
   
-  const handleDynamicListChange = (index: number, value: string, listType: 'training' | 'certificate') => {
+  const handleDynamicListChange = (index: number, field: 'name' | 'date', value: string, listType: 'training' | 'certificate') => {
     if (listType === 'training') {
         const updated = [...trainings];
-        updated[index] = value;
+        updated[index] = { ...updated[index], [field]: value };
         setTrainings(updated);
     } else {
         const updated = [...certificates];
-        updated[index] = value;
+        updated[index] = { ...updated[index], [field]: value };
         setCertificates(updated);
     }
   };
 
   const addDynamicListItem = (listType: 'training' | 'certificate') => {
     if (listType === 'training') {
-        setTrainings([...trainings, '']);
+        setTrainings([...trainings, { name: '', date: '' }]);
     } else {
-        setCertificates([...certificates, '']);
+        setCertificates([...certificates, { name: '', date: '' }]);
     }
   };
 
@@ -552,9 +552,16 @@ export default function EmployeesPage() {
                     {trainings.map((training, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <Input 
-                            value={training}
-                            onChange={(e) => handleDynamicListChange(index, e.target.value, 'training')}
+                            value={training.name}
+                            onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'training')}
                             placeholder="e.g., Advanced React Workshop"
+                            className="w-1/2"
+                         />
+                         <Input 
+                            type="date"
+                            value={training.date}
+                            onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'training')}
+                            className="w-1/2"
                          />
                         <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'training')} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
@@ -575,9 +582,16 @@ export default function EmployeesPage() {
                     {certificates.map((cert, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <Input 
-                            value={cert}
-                            onChange={(e) => handleDynamicListChange(index, e.target.value, 'certificate')}
+                            value={cert.name}
+                            onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'certificate')}
                             placeholder="e.g., Certified Kubernetes Administrator"
+                            className="w-1/2"
+                         />
+                         <Input 
+                            type="date"
+                            value={cert.date}
+                            onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'certificate')}
+                            className="w-1/2"
                          />
                         <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'certificate')} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
@@ -676,5 +690,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-
-    

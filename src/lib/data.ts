@@ -5,6 +5,16 @@ export type Transfer = {
   toDate: string | null;
 };
 
+export type Training = {
+  name: string;
+  date: string;
+};
+
+export type Certificate = {
+  name: string;
+  date: string;
+};
+
 export type Employee = {
   id: string;
   fullName: string;
@@ -24,8 +34,8 @@ export type Employee = {
   dateOfBirth: string;
   transferHistory: Transfer[];
   status: 'Active' | 'Inactive';
-  trainings: string[];
-  certificates: string[];
+  trainings: Training[];
+  certificates: Certificate[];
 };
 
 export type LeaveStatusChange = {
@@ -79,8 +89,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1995-02-20',
     transferHistory: [],
     status: 'Active',
-    trainings: ['Advanced React', 'Node.js Fundamentals'],
-    certificates: ['Certified JavaScript Developer'],
+    trainings: [{ name: 'Advanced React', date: '2023-10-15' }, { name: 'Node.js Fundamentals', date: '2023-05-20' }],
+    certificates: [{ name: 'Certified JavaScript Developer', date: '2023-12-01' }],
   },
   {
     id: '12345-1234567-2',
@@ -101,8 +111,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1990-08-10',
     transferHistory: [],
     status: 'Active',
-    trainings: ['Conflict Resolution', 'Talent Acquisition'],
-    certificates: ['SHRM-CP'],
+    trainings: [{ name: 'Conflict Resolution', date: '2022-03-10' }, { name: 'Talent Acquisition', date: '2022-09-01' }],
+    certificates: [{ name: 'SHRM-CP', date: '2023-01-25' }],
   },
   {
     id: '12345-1234567-3',
@@ -123,7 +133,7 @@ export const employees: Employee[] = [
     dateOfBirth: '1998-12-05',
     transferHistory: [],
     status: 'Active',
-    trainings: ['Safety at Work'],
+    trainings: [{ name: 'Safety at Work', date: '2023-02-15' }],
     certificates: [],
   },
   {
@@ -409,5 +419,3 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
-
-    
