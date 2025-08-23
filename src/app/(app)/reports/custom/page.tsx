@@ -48,7 +48,7 @@ const allFields = [
     { id: 'dateOfAppointment', label: 'Date of Appointment', group: 'employment' },
     { id: 'employmentType', label: 'Employment Type', group: 'employment' },
     { id: 'status', label: 'Status', group: 'employment' },
-    { id: 'transferHistory', label: 'Service History', group: 'employment' },
+    { id: 'transferHistory', label: 'Transfer History', group: 'employment' },
     { id: 'trainings', label: 'Trainings Attended', group: 'development' },
     { id: 'certificates', label: 'Certificates Awarded', group: 'development' },
 ] as const;
@@ -334,3 +334,5 @@ export default function CustomReportsPage() {
         </div>
     );
 }
+
+    

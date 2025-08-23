@@ -49,7 +49,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             <TableHead>Employee</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
-            <TableHead>Service History</TableHead>
+            <TableHead>Transfer History</TableHead>
             <TableHead>Training & Certs</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -172,3 +172,5 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
+
+    

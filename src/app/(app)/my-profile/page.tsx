@@ -126,7 +126,7 @@ export default function MyProfilePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Service History</CardTitle>
+                    <CardTitle>Transfer History</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {employee.transferHistory && employee.transferHistory.length > 0 ? (
@@ -187,3 +187,5 @@ export default function MyProfilePage() {
     </div>
   );
 }
+
+    

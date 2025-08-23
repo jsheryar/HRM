@@ -42,7 +42,7 @@ const allFields = [
     { id: 'employmentType', label: 'Employment Type' },
     { id: 'dateOfAppointment', label: 'Date of Appointment' },
     { id: 'dateOfBirth', label: 'Date of Birth' },
-    { id: 'transferHistory', label: 'Service History' },
+    { id: 'transferHistory', label: 'Transfer History' },
     { id: 'status', label: 'Status' },
     { id: 'trainings', label: 'Trainings Attended' },
     { id: 'certificates', label: 'Certificates Awarded' },
@@ -194,3 +194,5 @@ export default function StandardReportsPage() {
         </div>
     );
 }
+
+    

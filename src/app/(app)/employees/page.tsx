@@ -517,7 +517,7 @@ export default function EmployeesPage() {
                 </div>
 
                 <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium">Service History</h3>
+                  <h3 className="text-lg font-medium">Transfer History</h3>
                   <div className="space-y-4">
                     {transferHistory.map((transfer, index) => (
                       <div key={index} className="grid gap-4 sm:grid-cols-5 items-end">
@@ -693,5 +693,7 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    
 
     
