@@ -1,14 +1,14 @@
+
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
 import { Users, UserCheck, UserX, MapPin } from 'lucide-react';
 
 export function DashboardCards() {
-  const { employees } = useAuth();
+  const { employees, stations } = useAuth();
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter((e) => e.status === 'Active').length;
   const inactiveEmployees = totalEmployees - activeEmployees;
-  const stations = new Set(employees.map(e => e.station));
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -48,7 +48,7 @@ export function DashboardCards() {
           <MapPin className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stations.size}</div>
+          <div className="text-2xl font-bold">{stations.length}</div>
           <p className="text-xs text-muted-foreground">Zonal Offices & Colonies</p>
         </CardContent>
       </Card>
