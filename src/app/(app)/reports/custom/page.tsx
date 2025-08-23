@@ -22,6 +22,10 @@ const formatTransferHistory = (history: Transfer[]): string => {
     if (!history || history.length === 0) return 'N/A';
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
+const formatList = (list: string[]): string => {
+    if (!list || list.length === 0) return 'N/A';
+    return list.join('; ');
+}
 
 const allFields = [
     { id: 'fullName', label: 'Full Name', group: 'employee' },
@@ -39,6 +43,8 @@ const allFields = [
     { id: 'employmentType', label: 'Employment Type', group: 'employment' },
     { id: 'status', label: 'Status', group: 'employment' },
     { id: 'transferHistory', label: 'Service History', group: 'employment' },
+    { id: 'trainings', label: 'Trainings Attended', group: 'development' },
+    { id: 'certificates', label: 'Certificates Awarded', group: 'development' },
 ] as const;
 
 type FieldId = typeof allFields[number]['id'];
@@ -71,6 +77,8 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
+    if (fields.includes('trainings')) details.push(`Trainings: ${formatList(emp.trainings)}`);
+    if (fields.includes('certificates')) details.push(`Certificates: ${formatList(emp.certificates)}`);
     return details.join('\n');
 }
 
@@ -179,7 +187,7 @@ export default function CustomReportsPage() {
         doc.save('CustomEmployeeReport.pdf');
     };
     
-    if (user?.role !== 'Admin' && user?.role !== 'Sub Admin') {
+    if (user?.role?.toLowerCase() !== 'admin' && user?.role?.toLowerCase() !== 'sub admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
     }
 
@@ -319,3 +327,5 @@ export default function CustomReportsPage() {
         </div>
     );
 }
+
+    

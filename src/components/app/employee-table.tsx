@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, KeyRound, CalendarDays } from "lucide-react";
+import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare } from "lucide-react";
 import type { Employee } from "@/lib/data";
 import { format, isValid } from "date-fns";
 import Link from "next/link";
@@ -50,6 +50,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
             <TableHead>Service History</TableHead>
+            <TableHead>Training & Certs</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -108,6 +109,25 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                     <span className="text-sm text-muted-foreground">No transfers</span>
                   )}
                 </TableCell>
+                 <TableCell>
+                    <div className="text-sm text-muted-foreground space-y-2">
+                        {employee.trainings.length > 0 && 
+                            <div className="flex items-start gap-1.5">
+                                <CheckSquare className="h-4 w-4 mt-0.5 shrink-0" />
+                                <span>{employee.trainings.join(', ')}</span>
+                            </div>
+                        }
+                        {employee.certificates.length > 0 && 
+                             <div className="flex items-start gap-1.5">
+                                <Award className="h-4 w-4 mt-0.5 shrink-0" />
+                                <span>{employee.certificates.join(', ')}</span>
+                            </div>
+                        }
+                         {employee.trainings.length === 0 && employee.certificates.length === 0 &&
+                            <span>No records</span>
+                         }
+                    </div>
+                </TableCell>
                 <TableCell>
                   <Badge variant={employee.status === 'Active' ? 'default' : 'destructive'} className={employee.status === 'Active' ? 'bg-green-500' : ''}>
                     {employee.status}
@@ -137,7 +157,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No employees found.
               </TableCell>
             </TableRow>
@@ -147,3 +167,5 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
+
+    

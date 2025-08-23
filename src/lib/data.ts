@@ -24,6 +24,8 @@ export type Employee = {
   dateOfBirth: string;
   transferHistory: Transfer[];
   status: 'Active' | 'Inactive';
+  trainings: string[];
+  certificates: string[];
 };
 
 export type LeaveStatusChange = {
@@ -77,6 +79,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1995-02-20',
     transferHistory: [],
     status: 'Active',
+    trainings: ['Advanced React', 'Node.js Fundamentals'],
+    certificates: ['Certified JavaScript Developer'],
   },
   {
     id: '12345-1234567-2',
@@ -97,6 +101,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1990-08-10',
     transferHistory: [],
     status: 'Active',
+    trainings: ['Conflict Resolution', 'Talent Acquisition'],
+    certificates: ['SHRM-CP'],
   },
   {
     id: '12345-1234567-3',
@@ -117,6 +123,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1998-12-05',
     transferHistory: [],
     status: 'Active',
+    trainings: ['Safety at Work'],
+    certificates: [],
   },
   {
     id: '12345-1234567-4',
@@ -137,6 +145,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1992-06-25',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '12345-1234567-5',
@@ -157,6 +167,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1996-04-12',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '12345-1234567-6',
@@ -179,6 +191,8 @@ export const employees: Employee[] = [
       { station: 'Colony 5', fromDate: '2021-01-01', toDate: '2022-12-31' },
     ],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '12345-1234567-7',
@@ -199,6 +213,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1993-01-15',
     transferHistory: [],
     status: 'Inactive',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '12345-1234567-8',
@@ -219,6 +235,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1997-07-07',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '12345-1234567-9',
@@ -239,6 +257,8 @@ export const employees: Employee[] = [
     dateOfBirth: '2000-03-22',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '23456-2345678-0',
@@ -259,6 +279,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1991-09-18',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
     {
     id: '23456-2345678-1',
@@ -279,6 +301,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1994-10-28',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '23456-2345678-2',
@@ -299,6 +323,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1985-05-14',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '23456-2345678-3',
@@ -319,6 +345,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1999-01-01',
     transferHistory: [],
     status: 'Inactive',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '23456-2345678-4',
@@ -339,6 +367,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1996-08-20',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
   {
     id: '23456-2345678-5',
@@ -359,6 +389,8 @@ export const employees: Employee[] = [
     dateOfBirth: '1992-03-03',
     transferHistory: [],
     status: 'Active',
+    trainings: [],
+    certificates: [],
   },
 ];
 
@@ -377,3 +409,5 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
+
+    

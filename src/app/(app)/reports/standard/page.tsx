@@ -17,6 +17,11 @@ const formatTransferHistory = (history: Transfer[]): string => {
     return history.map(t => `${t.station} (${t.fromDate} to ${t.toDate || 'Present'})`).join('; ');
 }
 
+const formatList = (list: string[]): string => {
+    if (!list || list.length === 0) return 'N/A';
+    return list.join('; ');
+}
+
 const allFields = [
     { id: 'fullName', label: 'Full Name' },
     { id: 'fatherName', label: "Father's Name" },
@@ -33,6 +38,8 @@ const allFields = [
     { id: 'dateOfBirth', label: 'Date of Birth' },
     { id: 'transferHistory', label: 'Service History' },
     { id: 'status', label: 'Status' },
+    { id: 'trainings', label: 'Trainings Attended' },
+    { id: 'certificates', label: 'Certificates Awarded' },
 ] as const;
 
 type FieldId = typeof allFields[number]['id'];
@@ -64,6 +71,8 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`History: ${formatTransferHistory(emp.transferHistory)}`);
+    if (fields.includes('trainings')) details.push(`Trainings: ${formatList(emp.trainings)}`);
+    if (fields.includes('certificates')) details.push(`Certificates: ${formatList(emp.certificates)}`);
     return details.join('\n');
 }
 
@@ -111,7 +120,7 @@ export default function StandardReportsPage() {
     
     const handlePrint = () => { window.print(); };
     
-    if (user?.role !== 'Admin' && user?.role !== 'Sub Admin') {
+    if (user?.role?.toLowerCase() !== 'admin' && user?.role?.toLowerCase() !== 'sub admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
     }
 
@@ -178,3 +187,5 @@ export default function StandardReportsPage() {
         </div>
     );
 }
+
+    

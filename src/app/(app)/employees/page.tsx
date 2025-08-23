@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2, KeyRound, Search } from "lucide-react";
+import { PlusCircle, Trash2, KeyRound, Search, Award, CheckSquare } from "lucide-react";
 import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/auth-context";
@@ -74,6 +74,8 @@ export default function EmployeesPage() {
   const [totalMarks, setTotalMarks] = React.useState<number | string>("");
   const [percentage, setPercentage] = React.useState<string>("");
   const [transferHistory, setTransferHistory] = React.useState<Transfer[]>([]);
+  const [trainings, setTrainings] = React.useState<string[]>([]);
+  const [certificates, setCertificates] = React.useState<string[]>([]);
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -88,6 +90,8 @@ export default function EmployeesPage() {
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
+    setTrainings(employee?.trainings ? [...employee.trainings] : []);
+    setCertificates(employee?.certificates ? [...employee.certificates] : []);
     setPhotoPreview(employee?.photo || null);
 
     // Set state for controlled select components
@@ -146,6 +150,8 @@ export default function EmployeesPage() {
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
       transferHistory: transferHistory,
+      trainings: trainings,
+      certificates: certificates,
       status: selectedEmployee?.status || 'Active',
     };
     
@@ -256,6 +262,34 @@ export default function EmployeesPage() {
     setTransferHistory(updatedHistory);
   };
   
+  const handleDynamicListChange = (index: number, value: string, listType: 'training' | 'certificate') => {
+    if (listType === 'training') {
+        const updated = [...trainings];
+        updated[index] = value;
+        setTrainings(updated);
+    } else {
+        const updated = [...certificates];
+        updated[index] = value;
+        setCertificates(updated);
+    }
+  };
+
+  const addDynamicListItem = (listType: 'training' | 'certificate') => {
+    if (listType === 'training') {
+        setTrainings([...trainings, '']);
+    } else {
+        setCertificates([...certificates, '']);
+    }
+  };
+
+  const removeDynamicListItem = (index: number, listType: 'training' | 'certificate') => {
+    if (listType === 'training') {
+        setTrainings(trainings.filter((_, i) => i !== index));
+    } else {
+        setCertificates(certificates.filter((_, i) => i !== index));
+    }
+  };
+
   const calculateTenure = (from: string, to: string | null) => {
     if (!from) return '';
     const fromDate = parseISO(from);
@@ -315,7 +349,7 @@ export default function EmployeesPage() {
     setFilteredEmployees(filtered);
   }, [searchQuery, activeTab, employeeList]);
 
-  const userRole = user?.role.toLowerCase();
+  const userRole = user?.role?.toLowerCase();
   const canDelete = userRole === 'admin' || userRole === 'editor';
   const canEdit = userRole === 'admin' || userRole === 'editor'
   const canManagePassword = userRole === 'admin';
@@ -511,6 +545,54 @@ export default function EmployeesPage() {
                     Add Transfer Record
                   </Button>
                 </div>
+                
+                <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2"><CheckSquare className="h-5 w-5" /> Trainings Attended</h3>
+                  <div className="space-y-4">
+                    {trainings.map((training, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input 
+                            value={training}
+                            onChange={(e) => handleDynamicListChange(index, e.target.value, 'training')}
+                            placeholder="e.g., Advanced React Workshop"
+                         />
+                        <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'training')} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove Training</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('training')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Training
+                  </Button>
+                </div>
+
+                 <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2"><Award className="h-5 w-5" /> Certificates Awarded</h3>
+                  <div className="space-y-4">
+                    {certificates.map((cert, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input 
+                            value={cert}
+                            onChange={(e) => handleDynamicListChange(index, e.target.value, 'certificate')}
+                            placeholder="e.g., Certified Kubernetes Administrator"
+                         />
+                        <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'certificate')} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove Certificate</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('certificate')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Certificate
+                  </Button>
+                </div>
+
+
               </div>
               <DialogFooter className="pt-6">
                 <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>

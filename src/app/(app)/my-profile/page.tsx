@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/lib/data";
 import { format, isValid, parseISO, intervalToDuration } from "date-fns";
 import { useAuth } from "@/context/auth-context";
+import { CheckSquare, Award } from "lucide-react";
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -141,8 +142,49 @@ export default function MyProfilePage() {
                   )}
                 </CardContent>
             </Card>
+            
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><CheckSquare className="h-5 w-5"/> Trainings Attended</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {employee.trainings && employee.trainings.length > 0 ? (
+                    <ul className="space-y-2 list-disc pl-5">
+                      {employee.trainings.map((t, i) => (
+                        <li key={i} className="text-sm">
+                           {t}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No training records found.</p>
+                  )}
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5" /> Certificates Awarded</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {employee.certificates && employee.certificates.length > 0 ? (
+                    <ul className="space-y-2 list-disc pl-5">
+                      {employee.certificates.map((c, i) => (
+                        <li key={i} className="text-sm">
+                           {c}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No certificates recorded.</p>
+                  )}
+                </CardContent>
+            </Card>
+
         </div>
       </div>
     </div>
   );
 }
+
+    
