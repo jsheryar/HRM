@@ -418,6 +418,61 @@ export const employees: Employee[] = [
     trainings: [],
     certificates: [],
   },
+  // Added 85 records below
+  ...Array.from({ length: 85 }, (_, i) => {
+    const uniqueId = 16 + i;
+    const firstNames = ["Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Rohan", "Prakash", "Zain", "Sameer", "Alisha", "Aisha", "Zara", "Sana", "Maya", "Lina"];
+    const lastNames = ["Sharma", "Verma", "Gupta", "Khan", "Ali", "Singh", "Kumar", "Das", "Chopra", "Malik", "Jain", "Patel", "Reddy", "Naidu", "Menon", "Iyer"];
+    const fatherFirstNames = ["Ramesh", "Suresh", "Mahesh", "Rajesh", "Sunil", "Anil", "Deepak", "Prakash", "Sanjay", "Vijay"];
+    const departments = ['Technology', 'Human Resources', 'Operations', 'Finance', 'Marketing'];
+    const designations = ["Software Engineer", "HR Manager", "Labourer", "Accountant", "Marketing Executive", "Supervisor", "System Analyst", "HR Assistant", "Senior Accountant", "UI/UX Designer", "Zonal Manager", "Digital Marketer", "DevOps Engineer"];
+    const stations = ["Head Office", "Zonal Office", "Labour Colony"];
+    const domiciles = ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory'];
+    const employmentTypes: ('Permanent' | 'Contract' | 'Daily-wage')[] = ['Permanent', 'Contract', 'Daily-wage'];
+    const statuses: ('Active' | 'Inactive')[] = ['Active', 'Inactive'];
+
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const fatherName = fatherFirstNames[Math.floor(Math.random() * fatherFirstNames.length)] + ' ' + lastNames[Math.floor(Math.random() * lastNames.length)];
+    const department = departments[Math.floor(Math.random() * departments.length)];
+    const designation = designations[Math.floor(Math.random() * designations.length)];
+    const station = stations[Math.floor(Math.random() * stations.length)];
+    const domicile = domiciles[Math.floor(Math.random() * domiciles.length)];
+    const employmentType = employmentTypes[Math.floor(Math.random() * employmentTypes.length)];
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const bps = `BPS-${String(Math.floor(Math.random() * 19) + 1).padStart(2, '0')}`;
+    const cnic = `34101-12345${String(uniqueId).padStart(3, '0')}-1`;
+    const dobYear = 1970 + Math.floor(Math.random() * 35);
+    const dobMonth = Math.floor(Math.random() * 12) + 1;
+    const dobDay = Math.floor(Math.random() * 28) + 1;
+    const apptYear = dobYear + 20 + Math.floor(Math.random() * 10);
+    const apptMonth = Math.floor(Math.random() * 12) + 1;
+    const apptDay = Math.floor(Math.random() * 28) + 1;
+
+    return {
+      id: cnic,
+      fullName: `${firstName} ${lastName}`,
+      fatherName: fatherName,
+      cnic: cnic,
+      password: 'password',
+      mobileNumber: `0302-${String(Math.floor(1000000 + Math.random() * 9000000))}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${uniqueId}@example.com`,
+      photo: 'https://placehold.co/100x100.png',
+      department: department,
+      designation: designation,
+      bps: bps,
+      education: ['Matric', 'Intermediate', 'Bachelors', 'Masters'][Math.floor(Math.random() * 4)],
+      station: station,
+      employmentType: employmentType,
+      dateOfAppointment: `${apptYear}-${String(apptMonth).padStart(2, '0')}-${String(apptDay).padStart(2, '0')}`,
+      dateOfBirth: `${dobYear}-${String(dobMonth).padStart(2, '0')}-${String(dobDay).padStart(2, '0')}`,
+      domicile: domicile,
+      transferHistory: [],
+      status: status,
+      trainings: [],
+      certificates: [],
+    };
+  }),
 ];
 
 
