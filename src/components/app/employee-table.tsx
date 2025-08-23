@@ -97,7 +97,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                   <div className="text-sm text-muted-foreground">{employee.station}</div>
                 </TableCell>
                  <TableCell>
-                  {employee.transferHistory.length > 0 ? (
+                  {employee.transferHistory && employee.transferHistory.length > 0 ? (
                     <ul className="text-sm text-muted-foreground list-disc pl-4">
                       {employee.transferHistory.map((t, i) => (
                         <li key={i}>
@@ -111,19 +111,19 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                 </TableCell>
                  <TableCell>
                     <div className="text-sm text-muted-foreground space-y-2">
-                        {employee.trainings.length > 0 && 
+                        {employee.trainings && employee.trainings.length > 0 && 
                             <div className="flex items-start gap-1.5">
                                 <CheckSquare className="h-4 w-4 mt-0.5 shrink-0" />
                                 <span>{employee.trainings.join(', ')}</span>
                             </div>
                         }
-                        {employee.certificates.length > 0 && 
+                        {employee.certificates && employee.certificates.length > 0 && 
                              <div className="flex items-start gap-1.5">
                                 <Award className="h-4 w-4 mt-0.5 shrink-0" />
                                 <span>{employee.certificates.join(', ')}</span>
                             </div>
                         }
-                         {employee.trainings.length === 0 && employee.certificates.length === 0 &&
+                         {(!employee.trainings || employee.trainings.length === 0) && (!employee.certificates || employee.certificates.length === 0) &&
                             <span>No records</span>
                          }
                     </div>
