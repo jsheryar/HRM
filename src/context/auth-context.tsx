@@ -22,6 +22,8 @@ type AuthContextType = {
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
   domiciles: string[];
   setDomiciles: React.Dispatch<React.SetStateAction<string[]>>;
+  stations: string[];
+  setStations: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
   const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
   const [domiciles, setDomiciles] = useState<string[]>(() => getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']));
+  const [stations, setStations] = useState<string[]>(() => getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]));
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
@@ -122,6 +125,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveToLocalStorage('domiciles', domiciles);
   }, [domiciles]);
+
+  useEffect(() => {
+    saveToLocalStorage('stations', stations);
+  }, [stations]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
@@ -212,7 +219,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     users,
     setUsers,
     domiciles,
-    setDomiciles
+    setDomiciles,
+    stations,
+    setStations
   };
 
   return (
@@ -229,3 +238,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

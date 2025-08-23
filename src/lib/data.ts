@@ -28,7 +28,7 @@ export type Employee = {
   designation: string;
   bps: string;
   education: string;
-  station: 'Head Office' | 'Zonal Office' | 'Labour Colony';
+  station: string;
   employmentType: 'Permanent' | 'Contract' | 'Daily-wage';
   dateOfAppointment: string;
   dateOfBirth: string;
@@ -435,3 +435,5 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
+
+    

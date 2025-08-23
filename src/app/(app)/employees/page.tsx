@@ -58,11 +58,9 @@ const designations = [
 
 const bpsLevels = Array.from({ length: 20 }, (_, i) => `BPS-${String(i + 1).padStart(2, '0')}`);
 
-const stationOptions = ["Head Office", "Zonal Office", "Labour Colony"];
-
 
 export default function EmployeesPage() {
-  const { employees, setEmployees, user, domiciles } = useAuth();
+  const { employees, setEmployees, user, domiciles, stations } = useAuth();
   const [employeeList, setEmployeeList] = React.useState<Employee[]>(employees);
   const [filteredEmployees, setFilteredEmployees] = React.useState<Employee[]>(employeeList);
   const [isFormDialogOpen, setIsFormDialogOpen] = React.useState(false);
@@ -147,7 +145,7 @@ export default function EmployeesPage() {
       designation: formDesignation || '',
       bps: formBps || '',
       education: educationRecord,
-      station: formStation as 'Head Office' | 'Zonal Office' | 'Labour Colony' || 'Head Office',
+      station: formStation || '',
       employmentType: formEmploymentType as 'Permanent' | 'Contract' | 'Daily-wage' || 'Permanent',
       dateOfAppointment: formData.get("dateOfAppointment") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
@@ -358,6 +356,7 @@ export default function EmployeesPage() {
   const canManagePassword = userRole === 'admin';
   const canAdd = userRole === 'admin' || userRole === 'editor' || userRole === 'data entry operator';
   const canViewLeaveDetails = userRole === 'admin' || userRole === 'sub admin';
+  const allTabs = ["All", ...stations];
 
   return (
     <div className="space-y-8">
@@ -447,9 +446,7 @@ export default function EmployeesPage() {
                                 <SelectValue placeholder="Select a station" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Head Office">Head Office</SelectItem>
-                                <SelectItem value="Zonal Office">Zonal Office</SelectItem>
-                                <SelectItem value="Labour Colony">Labour Colony</SelectItem>
+                                {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -531,7 +528,7 @@ export default function EmployeesPage() {
                                     <SelectValue placeholder="Select a station" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {stationOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -641,24 +638,16 @@ export default function EmployeesPage() {
         </div>
 
       <Tabs defaultValue="All" onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 md:w-fit">
-          <TabsTrigger value="All">All</TabsTrigger>
-          <TabsTrigger value="Head Office">Head Office</TabsTrigger>
-          <TabsTrigger value="Zonal Office">Zonal Offices</TabsTrigger>
-          <TabsTrigger value="Labour Colony">Labour Colonies</TabsTrigger>
+        <TabsList className="grid w-full md:grid-cols-none md:w-fit md:flex flex-wrap">
+          {allTabs.map(tab => (
+            <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>
+          ))}
         </TabsList>
-        <TabsContent value="All">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}} />
-        </TabsContent>
-        <TabsContent value="Head Office">
-          <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
-        </TabsContent>
-        <TabsContent value="Zonal Office">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
-        </TabsContent>
-        <TabsContent value="Labour Colony">
-            <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}/>
-        </TabsContent>
+        {allTabs.map(tab => (
+            <TabsContent key={tab} value={tab}>
+                <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}} />
+            </TabsContent>
+        ))}
       </Tabs>
 
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -704,3 +693,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    

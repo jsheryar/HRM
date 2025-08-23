@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
-    const { user, logoUrl, setLogoUrl, changePassword, users, setUsers, domiciles, setDomiciles } = useAuth();
+    const { user, logoUrl, setLogoUrl, changePassword, users, setUsers, domiciles, setDomiciles, stations, setStations } = useAuth();
     const [logoPreview, setLogoPreview] = React.useState<string | null>(logoUrl);
     const { toast } = useToast();
     const [currentPassword, setCurrentPassword] = React.useState("");
@@ -31,6 +31,8 @@ export default function SettingsPage() {
     
     // State for domicile management
     const [newDomicile, setNewDomicile] = React.useState("");
+    // State for station management
+    const [newStation, setNewStation] = React.useState("");
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -160,6 +162,21 @@ export default function SettingsPage() {
         toast({ title: "Success", description: `Removed "${domicileToDelete}" from domiciles.`});
     }
 
+    const handleAddStation = () => {
+        if (newStation && !stations.includes(newStation)) {
+            setStations([...stations, newStation].sort());
+            setNewStation("");
+            toast({ title: "Success", description: `Added "${newStation}" to stations.`});
+        } else if (stations.includes(newStation)) {
+             toast({ title: "Warning", description: `"${newStation}" already exists.`, variant: "destructive"});
+        }
+    }
+
+    const handleDeleteStation = (stationToDelete: string) => {
+        setStations(stations.filter(d => d !== stationToDelete));
+        toast({ title: "Success", description: `Removed "${stationToDelete}" from stations.`});
+    }
+
     const userRole = user?.role?.toLowerCase();
     if (userRole !== 'admin') {
       return ( <div className="p-4"><p>You do not have permission to view this page.</p></div> )
@@ -226,44 +243,84 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
 
-             <Card>
-                <CardHeader>
-                    <CardTitle>Domicile Management</CardTitle>
-                    <CardDescription>Add or remove domicile locations for employee records.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex gap-2 mb-4">
-                        <Input 
-                            placeholder="Enter new domicile..."
-                            value={newDomicile}
-                            onChange={(e) => setNewDomicile(e.target.value)}
-                        />
-                        <Button onClick={handleAddDomicile}>Add Domicile</Button>
-                    </div>
-                     <div className="rounded-lg border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Domicile Name</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {domiciles.map(domicile => (
-                                    <TableRow key={domicile}>
-                                        <TableCell className="font-medium">{domicile}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteDomicile(domicile)} className="text-destructive hover:text-destructive">
-                                                <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
-                                            </Button>
-                                        </TableCell>
+            <div className="grid gap-8 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Station Management</CardTitle>
+                        <CardDescription>Add or remove station locations for employee records.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex gap-2 mb-4">
+                            <Input 
+                                placeholder="Enter new station..."
+                                value={newStation}
+                                onChange={(e) => setNewStation(e.target.value)}
+                            />
+                            <Button onClick={handleAddStation}>Add Station</Button>
+                        </div>
+                         <div className="rounded-lg border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Station Name</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                     </div>
-                </CardContent>
-            </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {stations.map(station => (
+                                        <TableRow key={station}>
+                                            <TableCell className="font-medium">{station}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon" onClick={() => handleDeleteStation(station)} className="text-destructive hover:text-destructive">
+                                                    <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                         </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Domicile Management</CardTitle>
+                        <CardDescription>Add or remove domicile locations for employee records.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex gap-2 mb-4">
+                            <Input 
+                                placeholder="Enter new domicile..."
+                                value={newDomicile}
+                                onChange={(e) => setNewDomicile(e.target.value)}
+                            />
+                            <Button onClick={handleAddDomicile}>Add Domicile</Button>
+                        </div>
+                         <div className="rounded-lg border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Domicile Name</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {domiciles.map(domicile => (
+                                        <TableRow key={domicile}>
+                                            <TableCell className="font-medium">{domicile}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon" onClick={() => handleDeleteDomicile(domicile)} className="text-destructive hover:text-destructive">
+                                                    <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                         </div>
+                    </CardContent>
+                </Card>
+            </div>
 
             <Card>
                  <CardHeader>
@@ -367,3 +424,5 @@ export default function SettingsPage() {
         </div>
     );
 }
+
+    
