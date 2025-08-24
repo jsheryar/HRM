@@ -52,24 +52,30 @@ const saveToLocalStorage = (key: string, value: any) => {
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => getFromLocalStorage('user', null));
-  const [users, setUsers] = useState<User[]>(() => getFromLocalStorage('users', []));
-  const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
-  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
-  const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
-  const [domiciles, setDomiciles] = useState<string[]>(() => getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']));
-  const [stations, setStations] = useState<string[]>(() => getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]));
+  const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>([]);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [domiciles, setDomiciles] = useState<string[]>([]);
+  const [stations, setStations] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // This effect runs once on mount to initialize the state from localStorage
     const storedUser = getFromLocalStorage('user', null);
-    if(storedUser) {
-        setUser(storedUser);
-    }
+    const storedUsers = getFromLocalStorage('users', []);
+    const storedEmployees = getFromLocalStorage('employees', initialEmployees);
+    const storedLeaveRequests = getFromLocalStorage('leaveRequests', initialLeaveRequests);
+    const storedLeavePolicies = getFromLocalStorage('leavePolicies', initialLeavePolicies);
+    const storedLogoUrl = getFromLocalStorage('logoUrl', null);
+    const storedDomiciles = getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']);
+    const storedStations = getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]);
+    
     const initialAdminUser: User = {
         id: 'admin',
         name: 'Admin User',
@@ -77,16 +83,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: 'Admin',
         password: 'admin',
     };
-    let currentUsers = getFromLocalStorage('users', []);
-     if (currentUsers.length === 0 || !currentUsers.find((u:User) => u.role === 'Admin')) {
-        const adminExists = currentUsers.some((u:User) => u.id === 'admin' || u.email === initialAdminUser.email);
+
+    if (storedUsers.length === 0 || !storedUsers.find((u:User) => u.role === 'Admin')) {
+        const adminExists = storedUsers.some((u:User) => u.id === 'admin' || u.email === initialAdminUser.email);
         if (!adminExists) {
-            currentUsers = [initialAdminUser, ...currentUsers];
+            storedUsers.unshift(initialAdminUser);
         }
     }
-    setUsers(currentUsers);
-    saveToLocalStorage('users', currentUsers);
-
+    
+    setUser(storedUser);
+    setUsers(storedUsers);
+    setEmployees(storedEmployees);
+    setLeaveRequests(storedLeaveRequests);
+    setLeavePolicies(storedLeavePolicies);
+    setLogoUrl(storedLogoUrl);
+    setDomiciles(storedDomiciles);
+    setStations(storedStations);
 
     setLoading(false);
   }, []);
@@ -99,36 +111,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, loading, pathname, router]);
   
   useEffect(() => {
-      saveToLocalStorage('user', user);
-  }, [user]);
+      if(!loading) saveToLocalStorage('user', user);
+  }, [user, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('users', users);
-  }, [users]);
+    if(!loading) saveToLocalStorage('users', users);
+  }, [users, loading]);
   
   useEffect(() => {
-    saveToLocalStorage('employees', employees);
-  }, [employees]);
+    if(!loading) saveToLocalStorage('employees', employees);
+  }, [employees, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('leaveRequests', leaveRequests);
-  }, [leaveRequests]);
+    if(!loading) saveToLocalStorage('leaveRequests', leaveRequests);
+  }, [leaveRequests, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('leavePolicies', leavePolicies);
-  }, [leavePolicies]);
+    if(!loading) saveToLocalStorage('leavePolicies', leavePolicies);
+  }, [leavePolicies, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('logoUrl', logoUrl);
-  }, [logoUrl]);
+    if(!loading) saveToLocalStorage('logoUrl', logoUrl);
+  }, [logoUrl, loading]);
   
   useEffect(() => {
-    saveToLocalStorage('domiciles', domiciles);
-  }, [domiciles]);
+    if(!loading) saveToLocalStorage('domiciles', domiciles);
+  }, [domiciles, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('stations', stations);
-  }, [stations]);
+    if(!loading) saveToLocalStorage('stations', stations);
+  }, [stations, loading]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
