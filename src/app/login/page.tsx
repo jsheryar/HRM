@@ -20,17 +20,26 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await login(loginId, password);
-    if (success) {
-      router.push('/');
-    } else {
-      toast({
-        title: 'Login Failed',
-        description: 'Invalid credentials. Please try again.',
+    try {
+      const success = await login(loginId, password);
+      if (success) {
+        router.push('/');
+      } else {
+        toast({
+          title: 'Login Failed',
+          description: 'Invalid credentials. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+       toast({
+        title: 'Login Error',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
