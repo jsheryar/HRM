@@ -83,47 +83,108 @@ export default function EmployeesPage() {
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
 
 
-  // State for controlled select components
+  // State for controlled form fields
+  const [formFullName, setFormFullName] = React.useState("");
+  const [formFatherName, setFormFatherName] = React.useState("");
+  const [formCnic, setFormCnic] = React.useState("");
+  const [formMobileNumber, setFormMobileNumber] = React.useState("");
+  const [formEmail, setFormEmail] = React.useState("");
+  const [formDepartment, setFormDepartment] = React.useState("");
   const [formDesignation, setFormDesignation] = React.useState<string | undefined>();
   const [formBps, setFormBps] = React.useState<string | undefined>();
   const [formStation, setFormStation] = React.useState<string | undefined>();
   const [formEmploymentType, setFormEmploymentType] = React.useState<string | undefined>();
+  const [formDateOfAppointment, setFormDateOfAppointment] = React.useState("");
+  const [formDateOfBirth, setFormDateOfBirth] = React.useState("");
   const [formDomicile, setFormDomicile] = React.useState<string | undefined>();
   const [formStatus, setFormStatus] = React.useState<Employee['status'] | undefined>();
+  const [formDateOfRetirement, setFormDateOfRetirement] = React.useState<string | null>("");
+  const [formInstitution, setFormInstitution] = React.useState("");
+  const [formDegree, setFormDegree] = React.useState("");
+  const [formCompletionDate, setFormCompletionDate] = React.useState("");
+
+  const resetFormState = () => {
+    setFormFullName("");
+    setFormFatherName("");
+    setFormCnic("");
+    setFormMobileNumber("");
+    setFormEmail("");
+    setFormDepartment("");
+    setFormDesignation(undefined);
+    setFormBps(undefined);
+    setFormStation(undefined);
+    setFormEmploymentType(undefined);
+    setFormDateOfAppointment("");
+    setFormDateOfBirth("");
+    setFormDomicile(undefined);
+    setFormStatus('Active');
+    setFormDateOfRetirement("");
+    setFormInstitution("");
+    setFormDegree("");
+    setFormCompletionDate("");
+    setObtainedMarks("");
+    setTotalMarks("");
+    setPercentage("");
+    setTransferHistory([]);
+    setPromotionHistory([]);
+    setUpgradationHistory([]);
+    setTrainings([]);
+    setCertificates([]);
+    setPhotoPreview(null);
+  };
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
     // Use a timeout to ensure state is set after the selectedEmployee is updated
     // which allows the form to render with the correct defaults.
     setTimeout(() => {
-        setFormDesignation(employee?.designation || undefined);
-        setFormBps(employee?.bps || undefined);
-        setFormStation(employee?.station || undefined);
-        setFormEmploymentType(employee?.employmentType || undefined);
-        setFormDomicile(employee?.domicile || undefined);
-        setFormStatus(employee?.status || 'Active');
-        
-        setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
-        setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
-        setUpgradationHistory(employee?.upgradationHistory ? [...employee.upgradationHistory] : []);
-        setTrainings(employee?.trainings ? [...employee.trainings] : []);
-        setCertificates(employee?.certificates ? [...employee.certificates] : []);
-        setPhotoPreview(employee?.photo || null);
+        if (employee) {
+            setFormFullName(employee.fullName);
+            setFormFatherName(employee.fatherName);
+            setFormCnic(employee.cnic);
+            setFormMobileNumber(employee.mobileNumber);
+            setFormEmail(employee.email);
+            setFormDepartment(employee.department);
+            setFormDesignation(employee.designation);
+            setFormBps(employee.bps);
+            setFormStation(employee.station);
+            setFormEmploymentType(employee.employmentType);
+            setFormDateOfAppointment(employee.dateOfAppointment);
+            setFormDateOfBirth(employee.dateOfBirth);
+            setFormDomicile(employee.domicile);
+            setFormStatus(employee.status);
+            setFormDateOfRetirement(employee.dateOfRetirement || "");
+            
+            setTransferHistory(employee.transferHistory ? [...employee.transferHistory] : []);
+            setPromotionHistory(employee.promotionHistory ? [...employee.promotionHistory] : []);
+            setUpgradationHistory(employee.upgradationHistory ? [...employee.upgradationHistory] : []);
+            setTrainings(employee.trainings ? [...employee.trainings] : []);
+            setCertificates(employee.certificates ? [...employee.certificates] : []);
+            setPhotoPreview(employee.photo || null);
 
-        if(employee && employee.education) {
-            const eduParts = employee.education.split(',').map(p => p.trim());
-            const marksPart = eduParts.find(p => p.includes('/'));
-            if (marksPart) {
-                const [obtained, total] = marksPart.split(' ')[0].split('/');
-                setObtainedMarks(Number(obtained));
-                setTotalMarks(Number(total));
+            if(employee.education) {
+                const eduParts = employee.education.split(',').map(p => p.trim());
+                setFormInstitution(eduParts[0] || "");
+                setFormDegree(eduParts[1] || "");
+                setFormCompletionDate(eduParts[2] || "");
+                const marksPart = eduParts.find(p => p.includes('/'));
+                if (marksPart) {
+                    const [obtained, total] = marksPart.split(' ')[0].split('/');
+                    setObtainedMarks(Number(obtained));
+                    setTotalMarks(Number(total));
+                } else {
+                    setObtainedMarks("");
+                    setTotalMarks("");
+                }
             } else {
-                setObtainedMarks("");
-                setTotalMarks("");
+                 setFormInstitution("");
+                 setFormDegree("");
+                 setFormCompletionDate("");
+                 setObtainedMarks("");
+                 setTotalMarks("");
             }
         } else {
-            setObtainedMarks("");
-            setTotalMarks("");
+            resetFormState();
         }
     }, 0);
     setIsFormDialogOpen(true);
@@ -136,41 +197,8 @@ export default function EmployeesPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const cnic = formData.get("cnic") as string;
     
-    const institution = formData.get("institution") as string;
-    const degree = formData.get("degree") as string;
-    const completionDate = formData.get("completionDate") as string;
-    const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
-
-    const employeeData: Omit<Employee, 'password' | 'id'> & { id: string; password?: string } = {
-      id: selectedEmployee ? selectedEmployee.id : cnic,
-      fullName: formData.get("fullName") as string,
-      fatherName: formData.get("fatherName") as string,
-      cnic: cnic,
-      mobileNumber: formData.get("mobileNumber") as string,
-      email: formData.get("email") as string,
-      photo: photoPreview || 'https://placehold.co/100x100.png',
-      department: formData.get("department") as string,
-      designation: formDesignation || '',
-      bps: formBps || '',
-      education: educationRecord,
-      station: formStation || '',
-      employmentType: formEmploymentType as 'Permanent' | 'Contract' | 'Daily-wage' || 'Permanent',
-      dateOfAppointment: formData.get("dateOfAppointment") as string,
-      dateOfBirth: formData.get("dateOfBirth") as string,
-      domicile: formDomicile || '',
-      transferHistory: transferHistory,
-      promotionHistory: promotionHistory,
-      upgradationHistory: upgradationHistory,
-      trainings: trainings,
-      certificates: certificates,
-      status: formStatus || 'Active',
-      dateOfRetirement: formData.get("dateOfRetirement") as string || null,
-    };
-    
-    if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps || !employeeData.domicile) {
+    if (!formFullName || !formFatherName || !formCnic || !formMobileNumber || !formEmail || !formDepartment || !formDesignation || !formBps || !formStation || !formEmploymentType || !formDateOfAppointment || !formDateOfBirth || !formDomicile) {
         toast({
             title: "Error",
             description: "Please fill out all required fields.",
@@ -178,6 +206,35 @@ export default function EmployeesPage() {
         });
         return;
     }
+
+    const educationRecord = `${formInstitution || ''}, ${formDegree || ''}, ${formCompletionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
+
+    const employeeData: Omit<Employee, 'password' | 'id'> & { id: string; password?: string } = {
+      id: selectedEmployee ? selectedEmployee.id : formCnic,
+      fullName: formFullName,
+      fatherName: formFatherName,
+      cnic: formCnic,
+      mobileNumber: formMobileNumber,
+      email: formEmail,
+      photo: photoPreview || 'https://placehold.co/100x100.png',
+      department: formDepartment,
+      designation: formDesignation,
+      bps: formBps,
+      education: educationRecord,
+      station: formStation,
+      employmentType: formEmploymentType as 'Permanent' | 'Contract' | 'Daily-wage',
+      dateOfAppointment: formDateOfAppointment,
+      dateOfBirth: formDateOfBirth,
+      domicile: formDomicile,
+      transferHistory: transferHistory,
+      promotionHistory: promotionHistory,
+      upgradationHistory: upgradationHistory,
+      trainings: trainings,
+      certificates: certificates,
+      status: formStatus || 'Active',
+      dateOfRetirement: formDateOfRetirement || null,
+    };
+    
 
     let updatedEmployees;
     if (selectedEmployee) {
@@ -198,7 +255,7 @@ export default function EmployeesPage() {
     setEmployeeList(updatedEmployees);
     setIsFormDialogOpen(false);
     setSelectedEmployee(null);
-    setPhotoPreview(null);
+    resetFormState();
   };
   
   const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -451,27 +508,27 @@ export default function EmployeesPage() {
                   <div className="grid gap-4 py-4 sm:grid-cols-3">
                       <div className="space-y-2">
                         <Label htmlFor="fullName">Full Name</Label>
-                        <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
+                        <Input id="fullName" value={formFullName} onChange={e => setFormFullName(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="fatherName">Father's Name</Label>
-                        <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
+                        <Input id="fatherName" value={formFatherName} onChange={e => setFormFatherName(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="cnic">CNIC Number (Login ID)</Label>
-                        <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required disabled={!!selectedEmployee}/>
+                        <Input id="cnic" value={formCnic} onChange={e => setFormCnic(e.target.value)} required disabled={!!selectedEmployee}/>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="mobileNumber">Mobile Number</Label>
-                        <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
+                        <Input id="mobileNumber" type="tel" value={formMobileNumber} onChange={e => setFormMobileNumber(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
+                        <Input id="email" type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="department">Department</Label>
-                        <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
+                        <Input id="department" value={formDepartment} onChange={e => setFormDepartment(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="designation">Designation</Label>
@@ -521,11 +578,11 @@ export default function EmployeesPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
-                        <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
+                        <Input id="dateOfAppointment" type="date" value={formDateOfAppointment} onChange={e => setFormDateOfAppointment(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                        <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
+                        <Input id="dateOfBirth" type="date" value={formDateOfBirth} onChange={e => setFormDateOfBirth(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="domicile">Domicile</Label>
@@ -554,7 +611,7 @@ export default function EmployeesPage() {
                       {formStatus === 'Retired' && (
                         <div className="space-y-2">
                             <Label htmlFor="dateOfRetirement">Date of Retirement</Label>
-                            <Input id="dateOfRetirement" name="dateOfRetirement" type="date" defaultValue={selectedEmployee?.dateOfRetirement || ''} />
+                            <Input id="dateOfRetirement" type="date" value={formDateOfRetirement || ''} onChange={e => setFormDateOfRetirement(e.target.value)} />
                         </div>
                       )}
                   </div>
@@ -564,15 +621,15 @@ export default function EmployeesPage() {
                       <div className="grid gap-4 sm:grid-cols-3">
                           <div className="space-y-2">
                               <Label htmlFor="institution">School/College/University</Label>
-                              <Input id="institution" name="institution" defaultValue={selectedEmployee?.education?.split(',')[0]} />
+                              <Input id="institution" value={formInstitution} onChange={e => setFormInstitution(e.target.value)} />
                           </div>
                           <div className="space-y-2">
                               <Label htmlFor="degree">Degree/Program</Label>
-                              <Input id="degree" name="degree" defaultValue={selectedEmployee?.education?.split(',')[1]}/>
+                              <Input id="degree" value={formDegree} onChange={e => setFormDegree(e.target.value)} />
                           </div>
                           <div className="space-y-2">
                               <Label htmlFor="completionDate">Completion Date</Label>
-                              <Input id="completionDate" name="completionDate" type="date" defaultValue={selectedEmployee?.education?.split(',')[2]}/>
+                              <Input id="completionDate" type="date" value={formCompletionDate} onChange={e => setFormCompletionDate(e.target.value)} />
                           </div>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-3">
@@ -866,3 +923,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    
