@@ -67,8 +67,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // This effect runs once on mount to initialize the state from localStorage
+    setLoading(true);
     const storedUser = getFromLocalStorage('user', null);
-    const storedUsers = getFromLocalStorage('users', []);
+    let storedUsers = getFromLocalStorage('users', []);
     const storedEmployees = getFromLocalStorage('employees', initialEmployees);
     const storedLeaveRequests = getFromLocalStorage('leaveRequests', initialLeaveRequests);
     const storedLeavePolicies = getFromLocalStorage('leavePolicies', initialLeavePolicies);
@@ -84,11 +85,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password: 'admin',
     };
 
-    if (storedUsers.length === 0 || !storedUsers.find((u:User) => u.role === 'Admin')) {
-        const adminExists = storedUsers.some((u:User) => u.id === 'admin' || u.email === initialAdminUser.email);
-        if (!adminExists) {
-            storedUsers.unshift(initialAdminUser);
-        }
+    // Ensure the admin user always exists without wiping other users
+    const adminExists = storedUsers.some((u: User) => u.id === 'admin' || u.email === initialAdminUser.email);
+    if (!adminExists) {
+        storedUsers = [initialAdminUser, ...storedUsers];
     }
     
     setUser(storedUser);
@@ -146,14 +146,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     let foundUser: User | null = null;
     
+    // Always get the freshest data from storage for login check
     const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
+    // Check against the main user list first (admins, operators, etc.)
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
 
     if (appUser) {
         foundUser = { ...appUser };
     } else {
+      // If not found, check against the employee list
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
@@ -233,7 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
@@ -245,3 +248,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

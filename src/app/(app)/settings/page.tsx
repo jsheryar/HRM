@@ -454,7 +454,7 @@ export default function SettingsPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="email">Email (Login ID)</Label>
-                                            <Input id="email" name="email" type="email" defaultValue={selectedUser?.email} required disabled={!!selectedUser} />
+                                            <Input id="email" name="email" type="email" defaultValue={selectedUser ? selectedUser.email : ''} required disabled={!!selectedUser} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="role">Role</Label>
@@ -531,5 +531,7 @@ export default function SettingsPage() {
         </div>
     );
 }
+
+    
 
     
