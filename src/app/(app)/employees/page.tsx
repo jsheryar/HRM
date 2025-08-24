@@ -93,6 +93,14 @@ export default function EmployeesPage() {
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
+    // Set state for controlled select components first
+    setFormDesignation(employee?.designation || undefined);
+    setFormBps(employee?.bps || undefined);
+    setFormStation(employee?.station || undefined);
+    setFormEmploymentType(employee?.employmentType || undefined);
+    setFormDomicile(employee?.domicile || undefined);
+    setFormStatus(employee?.status || 'Active');
+    
     setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
     setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
     setUpgradationHistory(employee?.upgradationHistory ? [...employee.upgradationHistory] : []);
@@ -100,13 +108,6 @@ export default function EmployeesPage() {
     setCertificates(employee?.certificates ? [...employee.certificates] : []);
     setPhotoPreview(employee?.photo || null);
 
-    // Set state for controlled select components
-    setFormDesignation(employee?.designation);
-    setFormBps(employee?.bps);
-    setFormStation(employee?.station);
-    setFormEmploymentType(employee?.employmentType);
-    setFormDomicile(employee?.domicile);
-    setFormStatus(employee?.status || 'Active');
 
     if(employee && employee.education) {
         const eduParts = employee.education.split(',').map(p => p.trim());
