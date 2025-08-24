@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare, TrendingUp, ArrowUpCircle } from "lucide-react";
+import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare, TrendingUp, ArrowUpCircle, Briefcase } from "lucide-react";
 import type { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 import Link from "next/link";
@@ -238,7 +238,5 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
-
-    
 
     

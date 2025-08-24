@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/lib/data";
 import { format, isValid, parseISO, intervalToDuration } from "date-fns";
 import { useAuth } from "@/context/auth-context";
-import { CheckSquare, Award, TrendingUp, ArrowUpCircle } from "lucide-react";
+import { CheckSquare, Award, TrendingUp, ArrowUpCircle, Briefcase } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -34,17 +35,18 @@ const formatTenure = (dateString: string | null) => {
 
 export default function MyProfilePage() {
   const { user, employees } = useAuth();
+  const router = useRouter();
   const [employee, setEmployee] = React.useState<Employee | null>(null);
 
   React.useEffect(() => {
-    if(user?.role !== 'Admin') {
-      const foundEmployee = employees.find(e => e.cnic === user?.id);
+    if(user?.role && user.role.toLowerCase() !== 'employee') {
+       // If a non-employee tries to access this page, redirect them to the main dashboard
+       router.push('/');
+    } else if (user?.id) {
+      const foundEmployee = employees.find(e => e.cnic === user.id);
       setEmployee(foundEmployee || null);
-    } else {
-      // Admins should be redirected, but as a fallback, show a message.
-      setEmployee(null);
     }
-  }, [user, employees]);
+  }, [user, employees, router]);
 
   if (!employee) {
     return (
@@ -52,7 +54,7 @@ export default function MyProfilePage() {
             <h1 className="text-3xl font-headline font-bold tracking-tight">My Profile</h1>
             <Card>
                 <CardContent className="pt-6">
-                    <p>{user?.role === 'Admin' ? "Admins do not have a profile page. Please navigate using the sidebar." : "Loading employee data..."}</p>
+                    <p>{user?.role === 'Admin' ? "Redirecting..." : "Loading employee data..."}</p>
                 </CardContent>
             </Card>
         </div>
@@ -167,7 +169,7 @@ export default function MyProfilePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Transfer History</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5" /> Transfer History</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {employee.transferHistory && employee.transferHistory.length > 0 ? (
