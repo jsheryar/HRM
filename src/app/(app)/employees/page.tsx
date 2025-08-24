@@ -498,7 +498,7 @@ export default function EmployeesPage() {
                       <Label htmlFor="photo">Employee Photo</Label>
                       <div className="flex items-center gap-4">
                         <Avatar className="h-20 w-20">
-                            <AvatarImage src={photoPreview || ''} alt="Employee photo" data-ai-hint="person avatar" />
+                            <AvatarImage src={photoPreview || undefined} alt="Employee photo" data-ai-hint="person avatar" />
                             <AvatarFallback>Photo</AvatarFallback>
                         </Avatar>
                         <Input id="photo" name="photo" type="file" onChange={handlePhotoChange} accept="image/*" />
@@ -923,5 +923,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-
-    
