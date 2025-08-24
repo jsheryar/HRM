@@ -48,7 +48,8 @@ export type Employee = {
   transferHistory: Transfer[];
   promotionHistory: Promotion[];
   upgradationHistory: Upgradation[];
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Retired';
+  dateOfRetirement?: string | null;
   trainings: Training[];
   certificates: Certificate[];
 };
@@ -126,12 +127,13 @@ export const employees: Employee[] = [
     station: 'Zonal Office',
     employmentType: 'Permanent',
     dateOfAppointment: '2021-05-20',
-    dateOfBirth: '1990-08-10',
+    dateOfBirth: '1964-08-10',
     domicile: 'Sindh',
     transferHistory: [],
     promotionHistory: [{ date: '2023-05-20', designation: 'HR Manager', bps: 'BPS-18' }],
     upgradationHistory: [],
-    status: 'Active',
+    status: 'Retired',
+    dateOfRetirement: '2024-08-09',
     trainings: [{ name: 'Conflict Resolution', date: '2022-03-10' }, { name: 'Talent Acquisition', date: '2022-09-01' }],
     certificates: [{ name: 'SHRM-CP', date: '2023-01-25' }],
   },
@@ -226,14 +228,15 @@ export const employees: Employee[] = [
     station: 'Labour Colony',
     employmentType: 'Permanent',
     dateOfAppointment: '2019-07-22',
-    dateOfBirth: '1988-11-30',
+    dateOfBirth: '1963-11-30',
     domicile: 'Punjab',
     transferHistory: [
       { station: 'Colony 5', fromDate: '2021-01-01', toDate: '2022-12-31' },
     ],
     promotionHistory: [],
     upgradationHistory: [],
-    status: 'Active',
+    status: 'Retired',
+    dateOfRetirement: '2023-11-29',
     trainings: [],
     certificates: [],
   },
@@ -536,5 +539,3 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
 ];
-
-    

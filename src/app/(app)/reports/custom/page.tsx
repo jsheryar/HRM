@@ -54,6 +54,7 @@ const allFields = [
     { id: 'station', label: 'Station', group: 'employment' },
     { id: 'department', label: 'Department', group: 'employment' },
     { id: 'dateOfAppointment', label: 'Date of Appointment', group: 'employment' },
+    { id: 'dateOfRetirement', label: 'Date of Retirement', group: 'employment' },
     { id: 'employmentType', label: 'Employment Type', group: 'employment' },
     { id: 'status', label: 'Status', group: 'employment' },
     { id: 'transferHistory', label: 'Transfer History', group: 'employment' },
@@ -91,6 +92,7 @@ const formatEmploymentDetailsForExport = (emp: Employee, fields: FieldId[]) => {
     if (fields.includes('station')) details.push(`Station: ${emp.station}`);
     if (fields.includes('department')) details.push(`Department: ${emp.department}`);
     if (fields.includes('dateOfAppointment')) details.push(`Appointed: ${emp.dateOfAppointment}`);
+    if (fields.includes('dateOfRetirement')) details.push(`Retired: ${emp.dateOfRetirement || 'N/A'}`);
     if (fields.includes('employmentType')) details.push(`Type: ${emp.employmentType}`);
     if (fields.includes('status')) details.push(`Status: ${emp.status}`);
     if (fields.includes('transferHistory')) details.push(`Transfers: ${formatTransferHistory(emp.transferHistory)}`);
@@ -110,16 +112,18 @@ export default function CustomReportsPage() {
 
 
     // Filters state
-    const [dateFilterField, setDateFilterField] = React.useState<"dateOfAppointment" | "dateOfBirth" | "">("");
+    const [dateFilterField, setDateFilterField] = React.useState<"dateOfAppointment" | "dateOfBirth" | "dateOfRetirement" | "">("");
     const [dateFrom, setDateFrom] = React.useState("");
     const [dateTo, setDateTo] = React.useState("");
     const [stationFilter, setStationFilter] = React.useState("all");
     const [departmentFilter, setDepartmentFilter] = React.useState("all");
     const [employmentTypeFilter, setEmploymentTypeFilter] = React.useState("all");
+    const [statusFilter, setStatusFilter] = React.useState("all");
     
     const stations = React.useMemo(() => Array.from(new Set(employees.map(e => e.station))), [employees]);
     const departments = React.useMemo(() => Array.from(new Set(employees.map(e => e.department))), [employees]);
     const employmentTypes = React.useMemo(() => Array.from(new Set(employees.map(e => e.employmentType))), [employees]);
+    const statuses = React.useMemo(() => Array.from(new Set(employees.map(e => e.status))), [employees]);
 
     const handleFieldToggle = (field: FieldId) => {
         setSelectedFields(prev => 
@@ -129,7 +133,10 @@ export default function CustomReportsPage() {
 
     const applyFilters = () => {
         let tempEmployees = [...employees];
-
+        
+        if (statusFilter && statusFilter !== 'all') {
+            tempEmployees = tempEmployees.filter(e => e.status === statusFilter);
+        }
         if (stationFilter && stationFilter !== 'all') {
             tempEmployees = tempEmployees.filter(e => e.station === stationFilter);
         }
@@ -242,26 +249,18 @@ export default function CustomReportsPage() {
 
                     <div className="space-y-4 rounded-md border p-4">
                          <h4 className="font-medium">Apply Filters</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                             <div className="space-y-2">
-                                <Label>Filter by Date Field</Label>
-                                <Select value={dateFilterField} onValueChange={(v) => setDateFilterField(v as any)}>
-                                    <SelectTrigger><SelectValue placeholder="Select date field..." /></SelectTrigger>
+                                <Label>Filter by Status</Label>
+                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger><SelectValue placeholder="All Statuses" /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="dateOfAppointment">Date of Appointment</SelectItem>
-                                        <SelectItem value="dateOfBirth">Date of Birth</SelectItem>
+                                        <SelectItem value="all">All Statuses</SelectItem>
+                                        {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="dateFrom">From</Label>
-                                <Input id="dateFrom" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} disabled={!dateFilterField} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="dateTo">To</Label>
-                                <Input id="dateTo" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} disabled={!dateFilterField} />
-                            </div>
-                             <div className="space-y-2">
                                 <Label>Filter by Station</Label>
                                 <Select value={stationFilter} onValueChange={setStationFilter}>
                                     <SelectTrigger><SelectValue placeholder="All Stations" /></SelectTrigger>
@@ -291,8 +290,31 @@ export default function CustomReportsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+                             <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Filter by Date Field</Label>
+                                    <Select value={dateFilterField} onValueChange={(v) => setDateFilterField(v as any)}>
+                                        <SelectTrigger><SelectValue placeholder="Select date field..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="dateOfAppointment">Date of Appointment</SelectItem>
+                                            <SelectItem value="dateOfBirth">Date of Birth</SelectItem>
+                                            <SelectItem value="dateOfRetirement">Date of Retirement</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="dateFrom">From</Label>
+                                    <Input id="dateFrom" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} disabled={!dateFilterField} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="dateTo">To</Label>
+                                    <Input id="dateTo" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} disabled={!dateFilterField} />
+                                </div>
+                             </div>
+                             <div className="flex items-end">
+                                <Button onClick={applyFilters} className="w-full"><Settings2 className="mr-2 h-4 w-4"/> Apply Filters</Button>
+                             </div>
                          </div>
-                         <Button onClick={applyFilters}><Settings2 className="mr-2 h-4 w-4"/> Apply Filters</Button>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -347,5 +369,3 @@ export default function CustomReportsPage() {
         </div>
     );
 }
-
-    

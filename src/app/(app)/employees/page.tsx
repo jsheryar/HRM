@@ -89,6 +89,7 @@ export default function EmployeesPage() {
   const [formStation, setFormStation] = React.useState<string | undefined>();
   const [formEmploymentType, setFormEmploymentType] = React.useState<string | undefined>();
   const [formDomicile, setFormDomicile] = React.useState<string | undefined>();
+  const [formStatus, setFormStatus] = React.useState<Employee['status'] | undefined>();
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
@@ -105,6 +106,7 @@ export default function EmployeesPage() {
     setFormStation(employee?.station);
     setFormEmploymentType(employee?.employmentType);
     setFormDomicile(employee?.domicile);
+    setFormStatus(employee?.status || 'Active');
 
     if(employee && employee.education) {
         const eduParts = employee.education.split(',').map(p => p.trim());
@@ -161,7 +163,8 @@ export default function EmployeesPage() {
       upgradationHistory: upgradationHistory,
       trainings: trainings,
       certificates: certificates,
-      status: selectedEmployee?.status || 'Active',
+      status: formStatus || 'Active',
+      dateOfRetirement: formData.get("dateOfRetirement") as string || null,
     };
     
     if (!employeeData.fullName || !employeeData.email || !employeeData.department || !employeeData.designation || !employeeData.station || !employeeData.employmentType || !employeeData.fatherName || !employeeData.cnic || !employeeData.mobileNumber || !employeeData.dateOfAppointment || !employeeData.dateOfBirth || !employeeData.bps || !employeeData.domicile) {
@@ -532,6 +535,25 @@ export default function EmployeesPage() {
                               </SelectContent>
                           </Select>
                       </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="status">Status</Label>
+                          <Select name="status" value={formStatus} onValueChange={(value) => setFormStatus(value as Employee['status'])} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="Active">Active</SelectItem>
+                                  <SelectItem value="Inactive">Inactive</SelectItem>
+                                  <SelectItem value="Retired">Retired</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      {formStatus === 'Retired' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="dateOfRetirement">Date of Retirement</Label>
+                            <Input id="dateOfRetirement" name="dateOfRetirement" type="date" defaultValue={selectedEmployee?.dateOfRetirement || ''} />
+                        </div>
+                      )}
                   </div>
 
                   <div className="space-y-4 rounded-md border p-4">
@@ -841,7 +863,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-
-    
-
-    

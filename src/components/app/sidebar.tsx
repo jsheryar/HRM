@@ -57,7 +57,7 @@ const allMenuItems = {
 const reportMenuItems = [
     { href: "/reports/standard", label: "Standard Report" },
     { href: "/reports/custom", label: "Custom Report" },
-    { href: "/reports/retirement", label: "Retirement Report" },
+    { href: "/reports/retirement", label: "Retired List" },
 ]
 
 export function AppSidebar() {
@@ -167,4 +167,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

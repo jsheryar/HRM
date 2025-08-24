@@ -17,6 +17,7 @@ import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare, TrendingUp,
 import type { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -200,7 +201,13 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                     </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={employee.status === 'Active' ? 'default' : 'destructive'} className={employee.status === 'Active' ? 'bg-green-500' : ''}>
+                  <Badge 
+                    variant={employee.status === 'Active' ? 'default' : 'destructive'} 
+                    className={cn(
+                        {'bg-green-500': employee.status === 'Active'},
+                        {'bg-yellow-500': employee.status === 'Retired'},
+                    )}
+                >
                     {employee.status}
                   </Badge>
                 </TableCell>
@@ -238,5 +245,3 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
-
-    
