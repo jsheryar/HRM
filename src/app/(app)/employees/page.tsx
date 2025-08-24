@@ -79,7 +79,7 @@ export default function EmployeesPage() {
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState("All");
+  const [stationFilter, setStationFilter] = React.useState("All");
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
 
 
@@ -433,8 +433,8 @@ export default function EmployeesPage() {
     let filtered = employeeList;
 
     // Filter by active tab
-    if (activeTab !== "All") {
-      filtered = filtered.filter((e) => e.station === activeTab);
+    if (stationFilter !== "All") {
+      filtered = filtered.filter((e) => e.station === stationFilter);
     }
     
     // Filter by search query
@@ -453,7 +453,7 @@ export default function EmployeesPage() {
 
     setFilteredEmployees(filtered);
     setSelectedEmployeeIds(new Set()); // Clear selection when filters change
-  }, [searchQuery, activeTab, employeeList]);
+  }, [searchQuery, stationFilter, employeeList]);
 
   const userRole = user?.role?.toLowerCase();
   const canDelete = userRole === 'admin' || userRole === 'editor';
@@ -461,7 +461,6 @@ export default function EmployeesPage() {
   const canManagePassword = userRole === 'admin';
   const canAdd = userRole === 'admin' || userRole === 'editor' || userRole === 'data entry operator';
   const canViewLeaveDetails = userRole === 'admin' || userRole === 'sub admin';
-  const allTabs = ["All", ...stations];
   const isAnyEmployeeSelected = selectedEmployeeIds.size > 0;
 
   return (
@@ -849,37 +848,41 @@ export default function EmployeesPage() {
         </div>
       </div>
       
-       <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, designation, station..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+       <div className="grid gap-4 md:grid-cols-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, designation, station..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-auto">
+             <Select value={stationFilter} onValueChange={setStationFilter}>
+                <SelectTrigger className="w-full md:w-[240px]">
+                  <SelectValue placeholder="Filter by station" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Stations</SelectItem>
+                  {stations.map(station => (
+                    <SelectItem key={station} value={station}>{station}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+          </div>
+       </div>
 
-      <Tabs defaultValue="All" onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full md:grid-cols-none md:w-fit md:flex flex-wrap">
-          {allTabs.map(tab => (
-            <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>
-          ))}
-        </TabsList>
-        {allTabs.map(tab => (
-            <TabsContent key={tab} value={tab}>
-                <EmployeeTable 
-                    employees={filteredEmployees} 
-                    onEdit={openFormDialog} 
-                    onDelete={handleDeleteClick} 
-                    onManagePassword={openPasswordDialog} 
-                    permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}
-                    selectedEmployeeIds={selectedEmployeeIds}
-                    setSelectedEmployeeIds={setSelectedEmployeeIds}
-                />
-            </TabsContent>
-        ))}
-      </Tabs>
-
+      <EmployeeTable 
+          employees={filteredEmployees} 
+          onEdit={openFormDialog} 
+          onDelete={handleDeleteClick} 
+          onManagePassword={openPasswordDialog} 
+          permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}
+          selectedEmployeeIds={selectedEmployeeIds}
+          setSelectedEmployeeIds={setSelectedEmployeeIds}
+      />
+      
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
