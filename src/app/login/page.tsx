@@ -8,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { login, logoUrl } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,7 @@ export default function LoginPage() {
     try {
       const success = await login(loginId, password);
       if (success) {
-        router.push('/');
+        // The redirection will be handled by the layout component
       } else {
         toast({
           title: 'Login Failed',
@@ -46,17 +47,18 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-            <div className="flex justify-center items-center gap-2 mb-4" data-testid="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-10 w-10 text-primary">
-                    <rect width="256" height="256" fill="none" />
-                    <path d="M43.4,182.1a95.9,95.9,0,0,1,6-108.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
-                    <path d="M212.6,73.9a95.9,95.9,0,0,1-6,108.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
-                    <path d="M73.9,43.4a95.9,95.9,0,0,1,108.2-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
-                    <path d="M182.1,212.6a95.9,95.9,0,0,1-108.2,6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
-                    <circle cx="128" cy="128" r="32" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
-                </svg>
+            <div className="flex justify-center items-center mb-4" data-testid="logo">
+                <Image 
+                  src={logoUrl || '/placeholder-logo.svg'} // Fallback logo
+                  alt="Company Logo"
+                  width={150}
+                  height={50}
+                  className="h-12 w-auto"
+                  data-ai-hint="logo"
+                  priority
+                />
             </div>
-            <CardTitle className="text-2xl">Welcome to ZoneFlow HR</CardTitle>
+            <CardTitle className="text-2xl">Workers Welfare Board</CardTitle>
             <CardDescription>Sign in to access your account</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
