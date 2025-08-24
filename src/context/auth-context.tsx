@@ -132,11 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     let foundUser: User | null = null;
     
-    // Always get the latest data from localStorage for login check
     const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
-    // Check against the users list (for Admin, Sub Admin, etc.)
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
     if(appUser) {
         foundUser = {...appUser};
@@ -144,11 +142,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             foundUser.role = 'Admin';
         }
     } else {
-      // Check for employee user by CNIC
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
-          id: employee.cnic, // Use CNIC as the user ID
+          id: employee.cnic,
           name: employee.fullName,
           email: employee.email,
           role: 'employee',
@@ -159,6 +156,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (foundUser) {
+      // **CRITICAL FIX**: Save to localStorage immediately before updating state.
+      saveToLocalStorage('user', foundUser); 
       setUser(foundUser);
       setLoading(false);
       return true;
@@ -190,7 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if(userFound) {
         setUsers(updatedUsers);
-        // Also update the currently logged in user's state if they are the one changing the password
         if (user?.id === userId) {
             setUser(prevUser => prevUser ? {...prevUser, password: newPassword} : null);
         }
@@ -236,4 +234,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
