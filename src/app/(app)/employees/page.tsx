@@ -141,7 +141,7 @@ export default function EmployeesPage() {
     const completionDate = formData.get("completionDate") as string;
     const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
 
-    const employeeData: Omit<Employee, 'password'> & { password?: string } = {
+    const employeeData: Omit<Employee, 'password' | 'id'> & { id: string; password?: string } = {
       id: cnic, // Use CNIC as the employee ID
       fullName: formData.get("fullName") as string,
       fatherName: formData.get("fatherName") as string,
