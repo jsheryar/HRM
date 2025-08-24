@@ -93,37 +93,39 @@ export default function EmployeesPage() {
   
   const openFormDialog = (employee: Employee | null = null) => {
     setSelectedEmployee(employee);
-    // Set state for controlled select components first
-    setFormDesignation(employee?.designation || undefined);
-    setFormBps(employee?.bps || undefined);
-    setFormStation(employee?.station || undefined);
-    setFormEmploymentType(employee?.employmentType || undefined);
-    setFormDomicile(employee?.domicile || undefined);
-    setFormStatus(employee?.status || 'Active');
-    
-    setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
-    setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
-    setUpgradationHistory(employee?.upgradationHistory ? [...employee.upgradationHistory] : []);
-    setTrainings(employee?.trainings ? [...employee.trainings] : []);
-    setCertificates(employee?.certificates ? [...employee.certificates] : []);
-    setPhotoPreview(employee?.photo || null);
+    // Use a timeout to ensure state is set after the selectedEmployee is updated
+    // which allows the form to render with the correct defaults.
+    setTimeout(() => {
+        setFormDesignation(employee?.designation || undefined);
+        setFormBps(employee?.bps || undefined);
+        setFormStation(employee?.station || undefined);
+        setFormEmploymentType(employee?.employmentType || undefined);
+        setFormDomicile(employee?.domicile || undefined);
+        setFormStatus(employee?.status || 'Active');
+        
+        setTransferHistory(employee?.transferHistory ? [...employee.transferHistory] : []);
+        setPromotionHistory(employee?.promotionHistory ? [...employee.promotionHistory] : []);
+        setUpgradationHistory(employee?.upgradationHistory ? [...employee.upgradationHistory] : []);
+        setTrainings(employee?.trainings ? [...employee.trainings] : []);
+        setCertificates(employee?.certificates ? [...employee.certificates] : []);
+        setPhotoPreview(employee?.photo || null);
 
-
-    if(employee && employee.education) {
-        const eduParts = employee.education.split(',').map(p => p.trim());
-        const marksPart = eduParts.find(p => p.includes('/'));
-        if (marksPart) {
-            const [obtained, total] = marksPart.split(' ')[0].split('/');
-            setObtainedMarks(Number(obtained));
-            setTotalMarks(Number(total));
+        if(employee && employee.education) {
+            const eduParts = employee.education.split(',').map(p => p.trim());
+            const marksPart = eduParts.find(p => p.includes('/'));
+            if (marksPart) {
+                const [obtained, total] = marksPart.split(' ')[0].split('/');
+                setObtainedMarks(Number(obtained));
+                setTotalMarks(Number(total));
+            } else {
+                setObtainedMarks("");
+                setTotalMarks("");
+            }
         } else {
-             setObtainedMarks("");
-             setTotalMarks("");
+            setObtainedMarks("");
+            setTotalMarks("");
         }
-    } else {
-        setObtainedMarks("");
-        setTotalMarks("");
-    }
+    }, 0);
     setIsFormDialogOpen(true);
   }
 
@@ -143,7 +145,7 @@ export default function EmployeesPage() {
     const educationRecord = `${institution || ''}, ${degree || ''}, ${completionDate || ''}, ${obtainedMarks || 0}/${totalMarks || 0} (${percentage || 0}%)`;
 
     const employeeData: Omit<Employee, 'password' | 'id'> & { id: string; password?: string } = {
-      id: cnic, // Use CNIC as the employee ID
+      id: selectedEmployee ? selectedEmployee.id : cnic,
       fullName: formData.get("fullName") as string,
       fatherName: formData.get("fatherName") as string,
       cnic: cnic,
@@ -864,3 +866,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    
