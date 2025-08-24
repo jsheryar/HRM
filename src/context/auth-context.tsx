@@ -135,13 +135,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
+    // Check against all non-employee users first
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
-    if(appUser) {
-        foundUser = {...appUser};
-        if (foundUser.role.toLowerCase() === 'admin') {
-            foundUser.role = 'Admin';
-        }
+
+    if (appUser) {
+        // Any user from the 'users' list is a valid app user (Admin, Sub Admin, Editor, etc.)
+        foundUser = { ...appUser };
     } else {
+      // If not found in app users, check if it's an employee
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
@@ -156,7 +157,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (foundUser) {
-      // **CRITICAL FIX**: Save to localStorage immediately before updating state.
       saveToLocalStorage('user', foundUser); 
       setUser(foundUser);
       setLoading(false);
