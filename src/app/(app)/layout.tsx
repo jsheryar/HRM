@@ -5,23 +5,33 @@ import { Header } from '@/components/app/header';
 import { AppSidebar } from '@/components/app/sidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    // This effect runs only on the client, after the component has mounted.
+    // It helps avoid hydration mismatches.
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Wait until client has mounted and auth is no longer loading.
+    if (isClient && !authLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, isClient, router]);
 
-  if (loading || !user) {
+  // While loading auth state or waiting for client to mount, show a loading screen.
+  // This prevents a flash of the page before the redirect can happen.
+  if (authLoading || !isClient || !user) {
     return (
        <div className="flex h-screen items-center justify-center">
         <p>Loading...</p>
@@ -29,9 +39,10 @@ export default function AppLayout({
     );
   }
 
+  // Once loading is complete and user is confirmed, render the main app layout.
   return (
     <SidebarProvider>
-        <AppSidebar isAdmin={user?.role === 'admin'} />
+        <AppSidebar />
         <SidebarInset>
             <div className="flex flex-col h-full">
               <Header />
