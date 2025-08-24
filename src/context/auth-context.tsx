@@ -90,11 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (!loading) {
-      if (user && pathname === '/login') {
-        const redirectPath = user.role.toLowerCase() === 'admin' ? '/' : '/my-profile';
-        router.push(redirectPath);
-      }
+    if (!loading && user && pathname === '/login') {
+      const redirectPath = user.role.toLowerCase() === 'employee' ? '/my-profile' : '/';
+      router.push(redirectPath);
     }
   }, [user, loading, pathname, router]);
   
