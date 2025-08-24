@@ -132,6 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     let foundUser: User | null = null;
     
+    // Always get the latest data from localStorage at the time of login attempt
     const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
