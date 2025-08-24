@@ -121,7 +121,7 @@ export default function SettingsPage() {
             toast({ title: "Success", description: "User updated successfully." });
         } else {
              const newUser: User = {
-                id: `user-${Date.now()}`,
+                id: email, // Use email as ID for simplicity
                 name,
                 email,
                 role,
@@ -133,6 +133,7 @@ export default function SettingsPage() {
 
         setIsUserFormOpen(false);
         setSelectedUser(null);
+        (e.target as HTMLFormElement).reset();
     }
     
     const handleDeleteUserClick = (userId: string) => {
@@ -453,7 +454,7 @@ export default function SettingsPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="email">Email (Login ID)</Label>
-                                            <Input id="email" name="email" type="email" defaultValue={selectedUser?.email} required />
+                                            <Input id="email" name="email" type="email" defaultValue={selectedUser?.email} required disabled={!!selectedUser} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="role">Role</Label>

@@ -77,14 +77,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: 'Admin',
         password: 'admin',
     };
-    const currentUsers = getFromLocalStorage('users', []);
+    let currentUsers = getFromLocalStorage('users', []);
      if (currentUsers.length === 0 || !currentUsers.find((u:User) => u.role === 'Admin')) {
-        const adminExists = currentUsers.some((u:User) => u.id === 'admin');
+        const adminExists = currentUsers.some((u:User) => u.id === 'admin' || u.email === initialAdminUser.email);
         if (!adminExists) {
-            currentUsers.push(initialAdminUser);
+            currentUsers = [initialAdminUser, ...currentUsers];
         }
     }
     setUsers(currentUsers);
+    saveToLocalStorage('users', currentUsers);
+
 
     setLoading(false);
   }, []);
@@ -181,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     let userFound = false;
     const updatedUsers = users.map(u => {
-        if(u.id === userId && u.password === currentPassword) {
+        if((u.id === userId || u.email === userId) && u.password === currentPassword) {
             userFound = true;
             return { ...u, password: newPassword };
         }
@@ -190,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if(userFound) {
         setUsers(updatedUsers);
-        if (user?.id === userId) {
+        if (user?.id === userId || user?.email === userId) {
             setUser(prevUser => prevUser ? {...prevUser, password: newPassword} : null);
         }
         return true;
@@ -235,3 +237,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    
