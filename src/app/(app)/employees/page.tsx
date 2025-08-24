@@ -80,6 +80,8 @@ export default function EmployeesPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState("All");
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
+
 
   // State for controlled select components
   const [formDesignation, setFormDesignation] = React.useState<string | undefined>();
@@ -221,14 +223,16 @@ export default function EmployeesPage() {
   }
 
   const handleDeleteConfirm = () => {
-    if (employeeToDelete) {
-      const updatedEmployees = employeeList.filter(emp => emp.id !== employeeToDelete);
+    const idsToDelete = employeeToDelete ? [employeeToDelete] : Array.from(selectedEmployeeIds);
+    if (idsToDelete.length > 0) {
+      const updatedEmployees = employeeList.filter(emp => !idsToDelete.includes(emp.id));
       setEmployees(updatedEmployees);
       setEmployeeList(updatedEmployees);
       toast({
         title: "Success",
-        description: "Employee record deleted.",
+        description: `${idsToDelete.length} employee record(s) deleted.`,
       });
+      setSelectedEmployeeIds(new Set());
     }
     setIsDeleteAlertOpen(false);
     setEmployeeToDelete(null);
@@ -359,6 +363,7 @@ export default function EmployeesPage() {
 
   React.useEffect(() => {
     setEmployeeList(employees);
+    setSelectedEmployeeIds(new Set()); // Clear selection when employees list changes
   }, [employees]);
   
   React.useEffect(() => {
@@ -384,6 +389,7 @@ export default function EmployeesPage() {
     }
 
     setFilteredEmployees(filtered);
+    setSelectedEmployeeIds(new Set()); // Clear selection when filters change
   }, [searchQuery, activeTab, employeeList]);
 
   const userRole = user?.role?.toLowerCase();
@@ -393,6 +399,7 @@ export default function EmployeesPage() {
   const canAdd = userRole === 'admin' || userRole === 'editor' || userRole === 'data entry operator';
   const canViewLeaveDetails = userRole === 'admin' || userRole === 'sub admin';
   const allTabs = ["All", ...stations];
+  const isAnyEmployeeSelected = selectedEmployeeIds.size > 0;
 
   return (
     <div className="space-y-8">
@@ -401,355 +408,363 @@ export default function EmployeesPage() {
           <h1 className="text-3xl font-headline font-bold tracking-tight">Employee Directory</h1>
           <p className="text-muted-foreground">Manage and view employee information.</p>
         </div>
-        <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => { setIsFormDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
-          <DialogTrigger asChild>
-            {canAdd && <Button onClick={() => openFormDialog()}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Employee
-            </Button>}
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
-              <DialogDescription>
-                {selectedEmployee ? 'Update the details below.' : 'Fill in the details below to add a new employee.'}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleFormSubmit}>
-              <div className="space-y-6">
-                 <div className="space-y-2">
-                    <Label htmlFor="photo">Employee Photo</Label>
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20">
-                          <AvatarImage src={photoPreview || ''} alt="Employee photo" data-ai-hint="person avatar" />
-                          <AvatarFallback>Photo</AvatarFallback>
-                      </Avatar>
-                      <Input id="photo" name="photo" type="file" onChange={handlePhotoChange} accept="image/*" />
-                    </div>
-                </div>
-
-                <div className="grid gap-4 py-4 sm:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="fatherName">Father's Name</Label>
-                      <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
-                    </div>
-                     <div className="space-y-2">
-                      <Label htmlFor="cnic">CNIC Number (Login ID)</Label>
-                      <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required disabled={!!selectedEmployee}/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="mobileNumber">Mobile Number</Label>
-                      <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department">Department</Label>
-                      <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="designation">Designation</Label>
-                        <Select name="designation" value={formDesignation} onValueChange={setFormDesignation} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a designation" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="bps">BPS</Label>
-                        <Select name="bps" value={formBps} onValueChange={setFormBps} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select BPS" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="station">Station</Label>
-                        <Select name="station" value={formStation} onValueChange={setFormStation} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a station" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="employmentType">Emp. Type</Label>
-                        <Select name="employmentType" value={formEmploymentType} onValueChange={setFormEmploymentType} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Permanent">Permanent</SelectItem>
-                                <SelectItem value="Contract">Contract</SelectItem>
-                                <SelectItem value="Daily-wage">Daily-wage</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                      <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
-                      <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                      <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="domicile">Domicile</Label>
-                        <Select name="domicile" value={formDomicile} onValueChange={setFormDomicile} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a domicile" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {domiciles.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="text-lg font-medium">Education Record</h3>
-                     <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="space-y-2">
-                            <Label htmlFor="institution">School/College/University</Label>
-                            <Input id="institution" name="institution" defaultValue={selectedEmployee?.education?.split(',')[0]} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="degree">Degree/Program</Label>
-                            <Input id="degree" name="degree" defaultValue={selectedEmployee?.education?.split(',')[1]}/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="completionDate">Completion Date</Label>
-                            <Input id="completionDate" name="completionDate" type="date" defaultValue={selectedEmployee?.education?.split(',')[2]}/>
-                        </div>
-                    </div>
-                     <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="space-y-2">
-                            <Label htmlFor="obtainedMarks">Obtained Marks</Label>
-                            <Input id="obtainedMarks" name="obtainedMarks" type="number" value={obtainedMarks} onChange={(e) => handleMarksChange(e, 'obtained')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="totalMarks">Total Marks</Label>
-                            <Input id="totalMarks" name="totalMarks" type="number" value={totalMarks} onChange={(e) => handleMarksChange(e, 'total')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="percentage">Percentage (%)</Label>
-                            <Input id="percentage" name="percentage" value={percentage} readOnly className="bg-muted"/>
-                        </div>
-                    </div>
-                </div>
-                
-                 <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Promotion History</h3>
-                  <div className="space-y-4">
-                    {promotionHistory.map((promo, index) => (
-                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
-                        <div className="space-y-2">
-                          <Label htmlFor={`promo_date_${index}`}>Date</Label>
-                          <Input id={`promo_date_${index}`} type="date" value={promo.date} onChange={(e) => handlePromotionChange(index, 'date', e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                           <Label htmlFor={`promo_designation_${index}`}>Designation</Label>
-                           <Select value={promo.designation} onValueChange={(value) => handlePromotionChange(index, 'designation', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Designation" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="space-y-2">
-                           <Label htmlFor={`promo_bps_${index}`}>BPS</Label>
-                           <Select value={promo.bps} onValueChange={(value) => handlePromotionChange(index, 'bps', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select BPS" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => removePromotionRecord(index)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove Promotion</span>
-                        </Button>
+         <div className="flex items-center gap-2">
+          {isAnyEmployeeSelected && canDelete && (
+            <Button variant="destructive" onClick={() => setIsDeleteAlertOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Selected ({selectedEmployeeIds.size})
+            </Button>
+          )}
+          <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => { setIsFormDialogOpen(isOpen); if (!isOpen) setSelectedEmployee(null); }}>
+            <DialogTrigger asChild>
+              {canAdd && <Button onClick={() => openFormDialog()}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Employee
+              </Button>}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{selectedEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
+                <DialogDescription>
+                  {selectedEmployee ? 'Update the details below.' : 'Fill in the details below to add a new employee.'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleFormSubmit}>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                      <Label htmlFor="photo">Employee Photo</Label>
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-20 w-20">
+                            <AvatarImage src={photoPreview || ''} alt="Employee photo" data-ai-hint="person avatar" />
+                            <AvatarFallback>Photo</AvatarFallback>
+                        </Avatar>
+                        <Input id="photo" name="photo" type="file" onChange={handlePhotoChange} accept="image/*" />
                       </div>
-                    ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addPromotionRecord}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Promotion Record
-                  </Button>
-                </div>
-                
-                 <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2"><ArrowUpCircle className="h-5 w-5" /> Upgradation History</h3>
-                  <div className="space-y-4">
-                    {upgradationHistory.map((upgrade, index) => (
-                      <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
-                        <div className="space-y-2">
-                          <Label htmlFor={`upgrade_date_${index}`}>Date</Label>
-                          <Input id={`upgrade_date_${index}`} type="date" value={upgrade.date} onChange={(e) => handleUpgradationChange(index, 'date', e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                           <Label htmlFor={`upgrade_designation_${index}`}>Designation</Label>
-                           <Select value={upgrade.designation} onValueChange={(value) => handleUpgradationChange(index, 'designation', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Designation" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="space-y-2">
-                           <Label htmlFor={`upgrade_bps_${index}`}>BPS</Label>
-                           <Select value={upgrade.bps} onValueChange={(value) => handleUpgradationChange(index, 'bps', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select BPS" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeUpgradationRecord(index)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove Upgradation</span>
-                        </Button>
+
+                  <div className="grid gap-4 py-4 sm:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input id="fullName" name="fullName" defaultValue={selectedEmployee?.fullName} required />
                       </div>
-                    ))}
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addUpgradationRecord}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Upgradation Record
-                  </Button>
-                </div>
-
-
-                <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium">Transfer History</h3>
-                  <div className="space-y-4">
-                    {transferHistory.map((transfer, index) => (
-                      <div key={index} className="grid gap-4 sm:grid-cols-5 items-end">
-                        <div className="space-y-2 sm:col-span-1">
-                          <Label htmlFor={`transfer_station_${index}`}>Section / Place of Duty</Label>
-                           <Select value={transfer.station} onValueChange={(value) => handleTransferChange(index, 'station', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a station" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`transfer_from_${index}`}>From Date</Label>
-                          <Input id={`transfer_from_${index}`} type="date" value={transfer.fromDate} onChange={(e) => handleTransferChange(index, 'fromDate', e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`transfer_to_${index}`}>To Date</Label>
-                          <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate || ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`transfer_tenure_${index}`}>Tenure</Label>
-                           <Input id={`transfer_tenure_${index}`} value={calculateTenure(transfer.fromDate, transfer.toDate)} readOnly className="bg-muted" />
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeTransferRecord(index)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove Transfer</span>
-                        </Button>
+                      <div className="space-y-2">
+                        <Label htmlFor="fatherName">Father's Name</Label>
+                        <Input id="fatherName" name="fatherName" defaultValue={selectedEmployee?.fatherName} required />
                       </div>
-                    ))}
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addTransferRecord}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Transfer Record
-                  </Button>
-                </div>
-                
-                <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2"><CheckSquare className="h-5 w-5" /> Trainings Attended</h3>
-                  <div className="space-y-4">
-                    {trainings.map((training, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Input 
-                            value={training.name}
-                            onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'training')}
-                            placeholder="e.g., Advanced React Workshop"
-                            className="w-1/2"
-                         />
-                         <Input 
-                            type="date"
-                            value={training.date}
-                            onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'training')}
-                            className="w-1/2"
-                         />
-                        <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'training')} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove Training</span>
-                        </Button>
+                      <div className="space-y-2">
+                        <Label htmlFor="cnic">CNIC Number (Login ID)</Label>
+                        <Input id="cnic" name="cnic" defaultValue={selectedEmployee?.cnic} required disabled={!!selectedEmployee}/>
                       </div>
-                    ))}
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('training')}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Training
-                  </Button>
-                </div>
-
-                 <div className="space-y-4 rounded-md border p-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2"><Award className="h-5 w-5" /> Certificates Awarded</h3>
-                  <div className="space-y-4">
-                    {certificates.map((cert, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Input 
-                            value={cert.name}
-                            onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'certificate')}
-                            placeholder="e.g., Certified Kubernetes Administrator"
-                            className="w-1/2"
-                         />
-                         <Input 
-                            type="date"
-                            value={cert.date}
-                            onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'certificate')}
-                            className="w-1/2"
-                         />
-                        <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'certificate')} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove Certificate</span>
-                        </Button>
+                      <div className="space-y-2">
+                        <Label htmlFor="mobileNumber">Mobile Number</Label>
+                        <Input id="mobileNumber" name="mobileNumber" type="tel" defaultValue={selectedEmployee?.mobileNumber} required />
                       </div>
-                    ))}
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" name="email" type="email" defaultValue={selectedEmployee?.email} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="department">Department</Label>
+                        <Input id="department" name="department" defaultValue={selectedEmployee?.department} required />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="designation">Designation</Label>
+                          <Select name="designation" value={formDesignation} onValueChange={setFormDesignation} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a designation" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="bps">BPS</Label>
+                          <Select name="bps" value={formBps} onValueChange={setFormBps} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select BPS" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="station">Station</Label>
+                          <Select name="station" value={formStation} onValueChange={setFormStation} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a station" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="employmentType">Emp. Type</Label>
+                          <Select name="employmentType" value={formEmploymentType} onValueChange={setFormEmploymentType} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="Permanent">Permanent</SelectItem>
+                                  <SelectItem value="Contract">Contract</SelectItem>
+                                  <SelectItem value="Daily-wage">Daily-wage</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="dateOfAppointment">Date of Appointment</Label>
+                        <Input id="dateOfAppointment" name="dateOfAppointment" type="date" defaultValue={selectedEmployee?.dateOfAppointment} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                        <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={selectedEmployee?.dateOfBirth} required />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="domicile">Domicile</Label>
+                          <Select name="domicile" value={formDomicile} onValueChange={setFormDomicile} required>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a domicile" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {domiciles.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      </div>
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('certificate')}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Certificate
-                  </Button>
+
+                  <div className="space-y-4 rounded-md border p-4">
+                      <h3 className="text-lg font-medium">Education Record</h3>
+                      <div className="grid gap-4 sm:grid-cols-3">
+                          <div className="space-y-2">
+                              <Label htmlFor="institution">School/College/University</Label>
+                              <Input id="institution" name="institution" defaultValue={selectedEmployee?.education?.split(',')[0]} />
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="degree">Degree/Program</Label>
+                              <Input id="degree" name="degree" defaultValue={selectedEmployee?.education?.split(',')[1]}/>
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="completionDate">Completion Date</Label>
+                              <Input id="completionDate" name="completionDate" type="date" defaultValue={selectedEmployee?.education?.split(',')[2]}/>
+                          </div>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-3">
+                          <div className="space-y-2">
+                              <Label htmlFor="obtainedMarks">Obtained Marks</Label>
+                              <Input id="obtainedMarks" name="obtainedMarks" type="number" value={obtainedMarks} onChange={(e) => handleMarksChange(e, 'obtained')} />
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="totalMarks">Total Marks</Label>
+                              <Input id="totalMarks" name="totalMarks" type="number" value={totalMarks} onChange={(e) => handleMarksChange(e, 'total')} />
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="percentage">Percentage (%)</Label>
+                              <Input id="percentage" name="percentage" value={percentage} readOnly className="bg-muted"/>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Promotion History</h3>
+                    <div className="space-y-4">
+                      {promotionHistory.map((promo, index) => (
+                        <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                          <div className="space-y-2">
+                            <Label htmlFor={`promo_date_${index}`}>Date</Label>
+                            <Input id={`promo_date_${index}`} type="date" value={promo.date} onChange={(e) => handlePromotionChange(index, 'date', e.target.value)} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`promo_designation_${index}`}>Designation</Label>
+                            <Select value={promo.designation} onValueChange={(value) => handlePromotionChange(index, 'designation', value)}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select Designation" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`promo_bps_${index}`}>BPS</Label>
+                            <Select value={promo.bps} onValueChange={(value) => handlePromotionChange(index, 'bps', value)}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select BPS" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => removePromotionRecord(index)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove Promotion</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={addPromotionRecord}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Promotion Record
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2"><ArrowUpCircle className="h-5 w-5" /> Upgradation History</h3>
+                    <div className="space-y-4">
+                      {upgradationHistory.map((upgrade, index) => (
+                        <div key={index} className="grid gap-4 sm:grid-cols-4 items-end">
+                          <div className="space-y-2">
+                            <Label htmlFor={`upgrade_date_${index}`}>Date</Label>
+                            <Input id={`upgrade_date_${index}`} type="date" value={upgrade.date} onChange={(e) => handleUpgradationChange(index, 'date', e.target.value)} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`upgrade_designation_${index}`}>Designation</Label>
+                            <Select value={upgrade.designation} onValueChange={(value) => handleUpgradationChange(index, 'designation', value)}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select Designation" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`upgrade_bps_${index}`}>BPS</Label>
+                            <Select value={upgrade.bps} onValueChange={(value) => handleUpgradationChange(index, 'bps', value)}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select BPS" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {bpsLevels.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => removeUpgradationRecord(index)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove Upgradation</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={addUpgradationRecord}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Upgradation Record
+                    </Button>
+                  </div>
+
+
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium">Transfer History</h3>
+                    <div className="space-y-4">
+                      {transferHistory.map((transfer, index) => (
+                        <div key={index} className="grid gap-4 sm:grid-cols-5 items-end">
+                          <div className="space-y-2 sm:col-span-1">
+                            <Label htmlFor={`transfer_station_${index}`}>Section / Place of Duty</Label>
+                            <Select value={transfer.station} onValueChange={(value) => handleTransferChange(index, 'station', value)}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select a station" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {stations.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`transfer_from_${index}`}>From Date</Label>
+                            <Input id={`transfer_from_${index}`} type="date" value={transfer.fromDate} onChange={(e) => handleTransferChange(index, 'fromDate', e.target.value)} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`transfer_to_${index}`}>To Date</Label>
+                            <Input id={`transfer_to_${index}`} type="date" value={transfer.toDate || ''} onChange={(e) => handleTransferChange(index, 'toDate', e.target.value)} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`transfer_tenure_${index}`}>Tenure</Label>
+                            <Input id={`transfer_tenure_${index}`} value={calculateTenure(transfer.fromDate, transfer.toDate)} readOnly className="bg-muted" />
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => removeTransferRecord(index)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove Transfer</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={addTransferRecord}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Transfer Record
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2"><CheckSquare className="h-5 w-5" /> Trainings Attended</h3>
+                    <div className="space-y-4">
+                      {trainings.map((training, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input 
+                              value={training.name}
+                              onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'training')}
+                              placeholder="e.g., Advanced React Workshop"
+                              className="w-1/2"
+                          />
+                          <Input 
+                              type="date"
+                              value={training.date}
+                              onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'training')}
+                              className="w-1/2"
+                          />
+                          <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'training')} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove Training</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('training')}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Training
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2"><Award className="h-5 w-5" /> Certificates Awarded</h3>
+                    <div className="space-y-4">
+                      {certificates.map((cert, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input 
+                              value={cert.name}
+                              onChange={(e) => handleDynamicListChange(index, 'name', e.target.value, 'certificate')}
+                              placeholder="e.g., Certified Kubernetes Administrator"
+                              className="w-1/2"
+                          />
+                          <Input 
+                              type="date"
+                              value={cert.date}
+                              onChange={(e) => handleDynamicListChange(index, 'date', e.target.value, 'certificate')}
+                              className="w-1/2"
+                          />
+                          <Button variant="ghost" size="icon" onClick={() => removeDynamicListItem(index, 'certificate')} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove Certificate</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('certificate')}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Certificate
+                    </Button>
+                  </div>
+
+
                 </div>
-
-
-              </div>
-              <DialogFooter className="pt-6">
-                <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter className="pt-6">
+                  <Button type="submit">{selectedEmployee ? 'Save Changes' : 'Add Employee'}</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       
        <div className="relative">
@@ -770,7 +785,15 @@ export default function EmployeesPage() {
         </TabsList>
         {allTabs.map(tab => (
             <TabsContent key={tab} value={tab}>
-                <EmployeeTable employees={filteredEmployees} onEdit={openFormDialog} onDelete={handleDeleteClick} onManagePassword={openPasswordDialog} permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}} />
+                <EmployeeTable 
+                    employees={filteredEmployees} 
+                    onEdit={openFormDialog} 
+                    onDelete={handleDeleteClick} 
+                    onManagePassword={openPasswordDialog} 
+                    permissions={{canEdit, canDelete, canManagePassword, canViewLeaveDetails}}
+                    selectedEmployeeIds={selectedEmployeeIds}
+                    setSelectedEmployeeIds={setSelectedEmployeeIds}
+                />
             </TabsContent>
         ))}
       </Tabs>
@@ -780,11 +803,11 @@ export default function EmployeesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the employee record.
+              This action cannot be undone. This will permanently delete the selected employee record(s).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -818,5 +841,7 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
+    
 
     

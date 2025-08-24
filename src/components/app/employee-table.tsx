@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, KeyRound, CalendarDays, Award, CheckSquare, TrendingUp, ArrowUpCircle } from "lucide-react";
 import type { Employee } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
@@ -28,6 +29,8 @@ interface EmployeeTableProps {
       canManagePassword: boolean;
       canViewLeaveDetails: boolean;
   }
+  selectedEmployeeIds: Set<string>;
+  setSelectedEmployeeIds: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 const formatDate = (dateString: string | null) => {
@@ -40,12 +43,40 @@ const formatDate = (dateString: string | null) => {
 }
 
 
-export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, permissions }: EmployeeTableProps) {
+export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, permissions, selectedEmployeeIds, setSelectedEmployeeIds }: EmployeeTableProps) {
+  
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedEmployeeIds(new Set(employees.map(e => e.id)));
+    } else {
+      setSelectedEmployeeIds(new Set());
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSet = new Set(selectedEmployeeIds);
+    if (checked) {
+      newSet.add(id);
+    } else {
+      newSet.delete(id);
+    }
+    setSelectedEmployeeIds(newSet);
+  }
+  
+  const isAllSelected = employees.length > 0 && selectedEmployeeIds.size === employees.length;
+
   return (
     <div className="rounded-lg border">
       <Table>
         <TableHeader>
           <TableRow>
+            {permissions.canDelete && <TableHead className="w-[50px]">
+              <Checkbox
+                checked={isAllSelected}
+                onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                aria-label="Select all rows"
+              />
+            </TableHead>}
             <TableHead>Employee</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
@@ -60,7 +91,14 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
         <TableBody>
           {employees.length > 0 ? (
             employees.map((employee) => (
-              <TableRow key={employee.id}>
+              <TableRow key={employee.id} data-state={selectedEmployeeIds.has(employee.id) ? "selected" : ""}>
+                 {permissions.canDelete && <TableCell>
+                   <Checkbox
+                      checked={selectedEmployeeIds.has(employee.id)}
+                      onCheckedChange={(checked) => handleSelectOne(employee.id, Boolean(checked))}
+                      aria-label={`Select row for ${employee.fullName}`}
+                    />
+                </TableCell>}
                 <TableCell>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-10 w-10">
@@ -190,7 +228,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center">
+              <TableCell colSpan={10} className="h-24 text-center">
                 No employees found.
               </TableCell>
             </TableRow>
@@ -200,5 +238,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
     </div>
   );
 }
+
+    
 
     
