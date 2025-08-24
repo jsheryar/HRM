@@ -78,6 +78,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                 aria-label="Select all rows"
               />
             </TableHead>}
+            <TableHead>Sr. No.</TableHead>
             <TableHead>Employee</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Appointment</TableHead>
@@ -91,7 +92,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
         </TableHeader>
         <TableBody>
           {employees.length > 0 ? (
-            employees.map((employee) => (
+            employees.map((employee, index) => (
               <TableRow key={employee.id} data-state={selectedEmployeeIds.has(employee.id) ? "selected" : ""}>
                  {permissions.canDelete && <TableCell>
                    <Checkbox
@@ -100,6 +101,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
                       aria-label={`Select row for ${employee.fullName}`}
                     />
                 </TableCell>}
+                <TableCell className="font-medium">{index + 1}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-10 w-10">
@@ -235,7 +237,7 @@ export function EmployeeTable({ employees, onEdit, onDelete, onManagePassword, p
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={10} className="h-24 text-center">
+              <TableCell colSpan={11} className="h-24 text-center">
                 No employees found.
               </TableCell>
             </TableRow>
