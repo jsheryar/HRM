@@ -77,7 +77,7 @@ export default function TransportPage() {
     const type = formData.get("type") as Vehicle['type'];
     const fuelType = formData.get("fuelType") as Vehicle['fuelType'];
     const status = formData.get("status") as Vehicle['status'];
-    const allottedTo = formData.get("allottedTo") as string | undefined;
+    const allottedToValue = formData.get("allottedTo") as string | undefined;
     const allotmentDate = formData.get("allotmentDate") as string | null;
 
     if (!registrationNumber || !make || !model || !year || !type || !status || !fuelType) {
@@ -88,6 +88,8 @@ export default function TransportPage() {
         });
         return;
     }
+    
+    const allottedTo = allottedToValue === "unassigned" ? undefined : allottedToValue;
 
     const vehicleData: Omit<Vehicle, 'id'> & { id: string } = {
       id: selectedVehicle ? selectedVehicle.id : registrationNumber,
@@ -252,10 +254,10 @@ export default function TransportPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="allottedTo">Allotted To</Label>
-                        <Select name="allottedTo" defaultValue={selectedVehicle?.allottedTo}>
+                        <Select name="allottedTo" defaultValue={selectedVehicle?.allottedTo || 'unassigned'}>
                             <SelectTrigger> <SelectValue placeholder="Select an employee" /> </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="unassigned">None</SelectItem>
                                 {employees.filter(e => e.status === 'Active').map(e => <SelectItem key={e.id} value={e.id}>{e.fullName} ({e.designation})</SelectItem>)}
                             </SelectContent>
                         </Select>
