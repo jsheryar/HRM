@@ -2,34 +2,25 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
-
-  // The login page is a public path
-  const isPublicPath = path === '/login'
-
-  // In a real app, you'd check a secure, httpOnly cookie.
-  // For this prototype, we're checking a cookie that the client-side code sets.
-  const token = request.cookies.get('user')?.value
-  const isAuthenticated = !!token
-
-  if (isPublicPath && isAuthenticated) {
-    // If the user is authenticated, redirect them from the login page to the dashboard.
-    // The specific dashboard is handled by the AuthProvider on the client side.
-    return NextResponse.redirect(new URL('/', request.nextUrl))
+  const { pathname } = request.nextUrl
+  
+  // Allow requests for API routes, static files, and image optimization
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.includes('.')) {
+    return NextResponse.next()
   }
 
-  if (!isPublicPath && !isAuthenticated) {
-    // If the user is not authenticated and trying to access a protected page,
-    // redirect them to the login page.
-    return NextResponse.redirect(new URL('/login', request.nextUrl))
+  // Allow the login page to be accessed
+  if (pathname === '/login') {
+    return NextResponse.next()
   }
 
+  // For all other routes, we will rely on the client-side check in AuthProvider
+  // and AppLayout for redirection. This avoids server-side redirects that
+  // can conflict with client-side routing and state management.
   return NextResponse.next()
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*

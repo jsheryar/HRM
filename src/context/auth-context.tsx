@@ -1,6 +1,6 @@
 
 'use client';
-import { User, employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies } from '@/lib/data';
+import { User, employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies, Vehicle, vehicles as initialVehicles } from '@/lib/data';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -15,6 +15,8 @@ type AuthContextType = {
   setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
   leavePolicies: LeavePolicy[];
   setLeavePolicies: React.Dispatch<React.SetStateAction<LeavePolicy[]>>;
+  vehicles: Vehicle[];
+  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   logoUrl: string | null;
   setLogoUrl: React.Dispatch<React.SetStateAction<string | null>>;
   changePassword: (userId: string, currentPassword?: string, newPassword?: string) => Promise<boolean>;
@@ -52,24 +54,33 @@ const saveToLocalStorage = (key: string, value: any) => {
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => getFromLocalStorage('user', null));
-  const [users, setUsers] = useState<User[]>(() => getFromLocalStorage('users', []));
-  const [employees, setEmployees] = useState<Employee[]>(() => getFromLocalStorage('employees', initialEmployees));
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => getFromLocalStorage('leaveRequests', initialLeaveRequests));
-  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>(() => getFromLocalStorage('leavePolicies', initialLeavePolicies));
-  const [logoUrl, setLogoUrl] = useState<string | null>(() => getFromLocalStorage('logoUrl', null));
-  const [domiciles, setDomiciles] = useState<string[]>(() => getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']));
-  const [stations, setStations] = useState<string[]>(() => getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]));
+  const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [domiciles, setDomiciles] = useState<string[]>([]);
+  const [stations, setStations] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // This effect runs once on mount to initialize the state from localStorage
+    setLoading(true);
     const storedUser = getFromLocalStorage('user', null);
-    if(storedUser) {
-        setUser(storedUser);
-    }
+    let storedUsers = getFromLocalStorage('users', []);
+    const storedEmployees = getFromLocalStorage('employees', initialEmployees);
+    const storedLeaveRequests = getFromLocalStorage('leaveRequests', initialLeaveRequests);
+    const storedLeavePolicies = getFromLocalStorage('leavePolicies', initialLeavePolicies);
+    const storedVehicles = getFromLocalStorage('vehicles', initialVehicles);
+    const storedLogoUrl = getFromLocalStorage('logoUrl', null);
+    const storedDomiciles = getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']);
+    const storedStations = getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]);
+    
     const initialAdminUser: User = {
         id: 'admin',
         name: 'Admin User',
@@ -77,80 +88,88 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: 'Admin',
         password: 'admin',
     };
-    const currentUsers = getFromLocalStorage('users', []);
-     if (currentUsers.length === 0 || !currentUsers.find((u:User) => u.role === 'Admin')) {
-        const adminExists = currentUsers.some((u:User) => u.id === 'admin');
-        if (!adminExists) {
-            currentUsers.push(initialAdminUser);
-        }
+
+    // Ensure the admin user always exists without wiping other users
+    const adminExists = storedUsers.some((u: User) => u.id === 'admin' || u.email === initialAdminUser.email);
+    if (!adminExists) {
+        storedUsers = [initialAdminUser, ...storedUsers.filter((u:User) => u.id !== 'admin' && u.email !== initialAdminUser.email)];
     }
-    setUsers(currentUsers);
+    
+    setUser(storedUser);
+    setUsers(storedUsers);
+    setEmployees(storedEmployees);
+    setLeaveRequests(storedLeaveRequests);
+    setLeavePolicies(storedLeavePolicies);
+    setVehicles(storedVehicles);
+    setLogoUrl(storedLogoUrl);
+    setDomiciles(storedDomiciles);
+    setStations(storedStations);
 
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!loading) {
-      if (user && pathname === '/login') {
-        const redirectPath = user.role.toLowerCase() === 'admin' ? '/' : '/my-profile';
-        router.push(redirectPath);
-      }
+    if (!loading && user && pathname === '/login') {
+      const redirectPath = user.role.toLowerCase() === 'employee' ? '/my-profile' : '/';
+      router.push(redirectPath);
     }
   }, [user, loading, pathname, router]);
   
   useEffect(() => {
-      saveToLocalStorage('user', user);
-  }, [user]);
+      if(!loading) saveToLocalStorage('user', user);
+  }, [user, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('users', users);
-  }, [users]);
+    if(!loading) saveToLocalStorage('users', users);
+  }, [users, loading]);
   
   useEffect(() => {
-    saveToLocalStorage('employees', employees);
-  }, [employees]);
+    if(!loading) saveToLocalStorage('employees', employees);
+  }, [employees, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('leaveRequests', leaveRequests);
-  }, [leaveRequests]);
+    if(!loading) saveToLocalStorage('leaveRequests', leaveRequests);
+  }, [leaveRequests, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('leavePolicies', leavePolicies);
-  }, [leavePolicies]);
-
-  useEffect(() => {
-    saveToLocalStorage('logoUrl', logoUrl);
-  }, [logoUrl]);
+    if(!loading) saveToLocalStorage('leavePolicies', leavePolicies);
+  }, [leavePolicies, loading]);
   
   useEffect(() => {
-    saveToLocalStorage('domiciles', domiciles);
-  }, [domiciles]);
+    if(!loading) saveToLocalStorage('vehicles', vehicles);
+  }, [vehicles, loading]);
 
   useEffect(() => {
-    saveToLocalStorage('stations', stations);
-  }, [stations]);
+    if(!loading) saveToLocalStorage('logoUrl', logoUrl);
+  }, [logoUrl, loading]);
+  
+  useEffect(() => {
+    if(!loading) saveToLocalStorage('domiciles', domiciles);
+  }, [domiciles, loading]);
+
+  useEffect(() => {
+    if(!loading) saveToLocalStorage('stations', stations);
+  }, [stations, loading]);
 
   const login = async (loginId: string, password?: string): Promise<boolean> => {
     setLoading(true);
     let foundUser: User | null = null;
     
-    // Always get the latest data from localStorage for login check
+    // Always get the freshest data from storage for login check
     const currentUsers = getFromLocalStorage('users', []);
     const currentEmployees = getFromLocalStorage('employees', initialEmployees);
 
-    // Check against the users list (for Admin, Sub Admin, etc.)
+    // Check against the main user list first (admins, operators, etc.)
     const appUser = currentUsers.find((u: User) => u.email === loginId && u.password === password);
-    if(appUser) {
-        foundUser = {...appUser};
-        if (foundUser.role.toLowerCase() === 'admin') {
-            foundUser.role = 'Admin';
-        }
+
+    if (appUser) {
+        foundUser = { ...appUser };
     } else {
-      // Check for employee user by CNIC
+      // If not found, check against the employee list
       const employee = currentEmployees.find((emp: Employee) => emp.cnic === loginId && emp.password === password);
       if (employee) {
         foundUser = {
-          id: employee.cnic, // Use CNIC as the user ID
+          id: employee.cnic,
           name: employee.fullName,
           email: employee.email,
           role: 'employee',
@@ -161,6 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (foundUser) {
+      saveToLocalStorage('user', foundUser); 
       setUser(foundUser);
       setLoading(false);
       return true;
@@ -183,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     let userFound = false;
     const updatedUsers = users.map(u => {
-        if(u.id === userId && u.password === currentPassword) {
+        if((u.id === userId || u.email === userId) && u.password === currentPassword) {
             userFound = true;
             return { ...u, password: newPassword };
         }
@@ -192,8 +212,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if(userFound) {
         setUsers(updatedUsers);
-        // Also update the currently logged in user's state if they are the one changing the password
-        if (user?.id === userId) {
+        if (user?.id === userId || user?.email === userId) {
             setUser(prevUser => prevUser ? {...prevUser, password: newPassword} : null);
         }
         return true;
@@ -213,6 +232,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLeaveRequests,
     leavePolicies,
     setLeavePolicies,
+    vehicles,
+    setVehicles,
     logoUrl,
     setLogoUrl,
     changePassword,
@@ -238,4 +259,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-

@@ -14,7 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, CalendarClock, FileText, FileSpreadsheet, ChevronDown, Settings, BookUser } from "lucide-react";
+import { LayoutDashboard, Users, CalendarClock, FileText, FileSpreadsheet, ChevronDown, Settings, BookUser, Car } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -31,6 +31,7 @@ const allMenuItems = {
     Admin: [
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/employees", label: "Employees", icon: Users },
+        { href: "/transport", label: "Transport", icon: Car },
         { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
         { href: "/leave-policy", label: "Leave Policy", icon: FileText },
         { href: "/explanation-letter", label: "Explanation Letter", icon: BookUser },
@@ -38,15 +39,18 @@ const allMenuItems = {
     "Sub Admin": [
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/employees", label: "Employees", icon: Users },
+        { href: "/transport", label: "Transport", icon: Car },
         { href: "/leave-record", label: "Leave Record", icon: CalendarClock },
         { href: "/leave-policy", label: "Leave Policy", icon: FileText },
         { href: "/explanation-letter", label: "Explanation Letter", icon: BookUser },
     ],
     Editor: [
         { href: "/employees", label: "Employees", icon: Users },
+        { href: "/transport", label: "Transport", icon: Car },
     ],
     "Data Entry Operator": [
         { href: "/employees", label: "Employees", icon: Users },
+        { href: "/transport", label: "Transport", icon: Car },
     ],
     employee: [
         { href: "/my-profile", label: "My Profile", icon: Users },
@@ -57,7 +61,7 @@ const allMenuItems = {
 const reportMenuItems = [
     { href: "/reports/standard", label: "Standard Report" },
     { href: "/reports/custom", label: "Custom Report" },
-    { href: "/reports/retirement", label: "Retirement Report" },
+    { href: "/reports/retirement", label: "Retired List" },
 ]
 
 export function AppSidebar() {
@@ -167,4 +171,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
