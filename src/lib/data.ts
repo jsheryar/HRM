@@ -1,4 +1,5 @@
 
+
 export type Transfer = {
   station: string;
   fromDate: string;
@@ -83,6 +84,19 @@ export type User = {
     photo?: string;
     role: 'Admin' | 'Sub Admin' | 'Editor' | 'Data Entry Operator' | 'employee';
 }
+
+export type Vehicle = {
+  id: string;
+  registrationNumber: string;
+  make: string;
+  model: string;
+  year: number;
+  type: 'Car' | 'Jeep' | 'Motorcycle' | 'Van';
+  status: 'Available' | 'Allotted' | 'In Workshop' | 'Disposed';
+  allottedTo?: string; // employeeId
+  allotmentDate?: string | null;
+  fuelType: 'Petrol' | 'Diesel' | 'Electric';
+};
 
 
 export const employees: Employee[] = [
@@ -538,4 +552,11 @@ export const leavePolicies: LeavePolicy[] = [
     { id: 'LPOL002', type: 'Sick Leave', balance: 8 },
     { id: 'LPOL003', type: 'Casual Leave', balance: 5 },
     { id: 'LPOL004', type: 'Unpaid Leave', balance: 0 },
+];
+
+export const vehicles: Vehicle[] = [
+  { id: 'ABC-123', registrationNumber: 'ABC-123', make: 'Toyota', model: 'Corolla', year: 2022, type: 'Car', status: 'Allotted', allottedTo: '23456-2345678-2', allotmentDate: '2023-01-15', fuelType: 'Petrol' },
+  { id: 'XYZ-789', registrationNumber: 'XYZ-789', make: 'Suzuki', model: 'Bolan', year: 2018, type: 'Van', status: 'Available', fuelType: 'Petrol' },
+  { id: 'PB-001', registrationNumber: 'PB-001', make: 'Honda', model: 'CD-70', year: 2023, type: 'Motorcycle', status: 'Available', fuelType: 'Petrol' },
+  { id: 'JD-456', registrationNumber: 'JD-456', make: 'Jeep', model: 'Wrangler', year: 2020, type: 'Jeep', status: 'In Workshop', fuelType: 'Diesel' },
 ];

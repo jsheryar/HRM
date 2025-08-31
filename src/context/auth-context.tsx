@@ -1,6 +1,6 @@
 
 'use client';
-import { User, employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies } from '@/lib/data';
+import { User, employees as initialEmployees, Employee, LeaveRequest, leaveRequests as initialLeaveRequests, LeavePolicy, leavePolicies as initialLeavePolicies, Vehicle, vehicles as initialVehicles } from '@/lib/data';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -15,6 +15,8 @@ type AuthContextType = {
   setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
   leavePolicies: LeavePolicy[];
   setLeavePolicies: React.Dispatch<React.SetStateAction<LeavePolicy[]>>;
+  vehicles: Vehicle[];
+  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   logoUrl: string | null;
   setLogoUrl: React.Dispatch<React.SetStateAction<string | null>>;
   changePassword: (userId: string, currentPassword?: string, newPassword?: string) => Promise<boolean>;
@@ -57,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [domiciles, setDomiciles] = useState<string[]>([]);
   const [stations, setStations] = useState<string[]>([]);
@@ -73,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedEmployees = getFromLocalStorage('employees', initialEmployees);
     const storedLeaveRequests = getFromLocalStorage('leaveRequests', initialLeaveRequests);
     const storedLeavePolicies = getFromLocalStorage('leavePolicies', initialLeavePolicies);
+    const storedVehicles = getFromLocalStorage('vehicles', initialVehicles);
     const storedLogoUrl = getFromLocalStorage('logoUrl', null);
     const storedDomiciles = getFromLocalStorage('domiciles', ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory']);
     const storedStations = getFromLocalStorage('stations', ["Head Office", "Zonal Office", "Labour Colony"]);
@@ -88,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Ensure the admin user always exists without wiping other users
     const adminExists = storedUsers.some((u: User) => u.id === 'admin' || u.email === initialAdminUser.email);
     if (!adminExists) {
-        storedUsers = [initialAdminUser, ...storedUsers];
+        storedUsers = [initialAdminUser, ...storedUsers.filter((u:User) => u.id !== 'admin' && u.email !== initialAdminUser.email)];
     }
     
     setUser(storedUser);
@@ -96,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setEmployees(storedEmployees);
     setLeaveRequests(storedLeaveRequests);
     setLeavePolicies(storedLeavePolicies);
+    setVehicles(storedVehicles);
     setLogoUrl(storedLogoUrl);
     setDomiciles(storedDomiciles);
     setStations(storedStations);
@@ -129,6 +134,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if(!loading) saveToLocalStorage('leavePolicies', leavePolicies);
   }, [leavePolicies, loading]);
+  
+  useEffect(() => {
+    if(!loading) saveToLocalStorage('vehicles', vehicles);
+  }, [vehicles, loading]);
 
   useEffect(() => {
     if(!loading) saveToLocalStorage('logoUrl', logoUrl);
@@ -223,6 +232,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLeaveRequests,
     leavePolicies,
     setLeavePolicies,
+    vehicles,
+    setVehicles,
     logoUrl,
     setLogoUrl,
     changePassword,
@@ -236,7 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -248,5 +259,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
